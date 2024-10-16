@@ -1,0 +1,353 @@
+﻿@page "/Category/CategoryConfiguration"
+
+ 
+@using AllinOne.DataHandlers
+@using DataAccessLayer.DataTransferObjects
+@using Microsoft.AspNetCore.Components;
+@using TrackerUIWeb.Data.ApiGateway
+@using TrackerUIWeb.Utilities
+ 
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
+@inject NavigationManager NavigationManager
+ @inject HttpHandlerService httpHandler
+ 
+@inject IUtilService _UtilService;
+
+
+@* <h1>@Title</h1>
+ *@
+<hr />
+
+
+<div>
+    <Modal @ref="modal"
+           title=@Title
+           OnShowing="OnModalShowing"
+           OnShown="OnModalShown"
+           OnHiding="OnModalHiding"
+           OnHidden="OnModalHidden"
+           OnHidePrevented="OnModalHidePrevented">
+
+        <BodyTemplate>
+
+            @if (!string.IsNullOrEmpty(OutputHandler.Message))
+            {
+                if (OutputHandler.IsErrorOccured)
+                {
+                    <p class="text-danger">@OutputHandler.Message</p>
+                }
+                else
+                {
+                    <p class="text-success">@OutputHandler.Message</p>
+                }
+
+
+            }
+            <EditForm Model="@Category" OnValidSubmit="Save">
+                <div class="row">
+                    <div class="mb-3 col-md-6">
+                        <label for="UploadDescription" class="form-label">
+                            Category Name
+                        </label>
+                        <div>
+                            <InputText @bind-Value="Category.CategoryName"></InputText>
+                            <ValidationMessage For="@(() => Category.CategoryName)" />
+                        </div>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="Name" class="form-label">Description</label>
+                        <div>
+                            <InputText @bind-Value="Category.Description"></InputText>
+                        </div>
+                        <ValidationMessage For="@(() => Category.Description)" />
+                    </div>
+
+                </div>
+             
+             
+             
+                <div class="row">
+                </div>
+
+            </EditForm>
+
+
+        </BodyTemplate>
+        <FooterTemplate>
+
+            @if (Action.ToLower() == "edit")
+            {
+                <Button Color="ButtonColor.Primary" @onclick="Save">Save changes</Button>
+            }
+            else if (Action.ToLower() == "delete")
+            {
+                <Button Color="ButtonColor.Primary" @onclick="ConfirmDelete">Confirm Delete</Button>
+            }
+            else
+            {
+                <Button Color="ButtonColor.Danger" @onclick=Save>Create Category</Button>
+            }
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        </FooterTemplate>
+
+    </Modal>
+
+
+    <Button Color="ButtonColor.Primary" @onclick="Create">Create New</Button>
+</div>
+
+
+@if (CategoryList.Count() == 0)
+{
+    <div class="spinner"></div>
+}
+else
+{
+    @* <h1>Uploads</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <a href='/Upload/add' class="btn btn-primary" role="button">
+                <i class="fas fa-upload-plus"></i>
+                Add Upload
+            </a>
+        </div>
+
+    </div> *@
+    <br />
+    <table class="table table-striped table-sm align-middle table-bordered" >
+        <thead class="table-success">
+            <tr>
+                <th>CategoryName</th>
+                <th>Description</th>
+         
+
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CategoryList)
+            {
+                <tr>
+
+
+                    <td>@item.CategoryName</td>
+                    <td class="text">@item.Description</td>
+                   
+
+
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="()=>PullActions(item.CategoryId)">Tracker</button>
+                        <button class="btn btn-sm btn-danger" @onclick="()=>Edit(item.CategoryId)">Edit</button>
+@*                         <button class="btn btn-danger" @onclick="()=>Delete(item.CategoryId)">Delete</button>
+ *@                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+}
+@code {
+    private CategoryDTO Category { get; set; } = new CategoryDTO();
+    private IEnumerable<CategoryDTO> CategoryList = new List<CategoryDTO>();
+    private string Action = "";
+
+    private int CategoryId { get; set; }
+    protected string Title = "";
+    // protected string Title = "Configure Category";
+    private bool IsCancelRequest;
+    protected OutputHandler OutputHandler = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        // bool loggedInUser = await _UtilService.IsUserAuthenticated();
+        //         if (loggedInUser == false)
+        //         {
+               
+        //             NavigationManager.NavigateTo("/Login");
+        //         }
+        CategoryList = await httpHandler.GetList<CategoryDTO>("Category/GetAllCategories");
+    }
+
+
+
+
+    protected async Task<OutputHandler> Save()
+    {
+
+        if (Action == "edit")
+        {
+            // OutputHandler = await _service.Update(Category);
+            // if (OutputHandler.IsErrorOccured == false)
+            // {
+            //     NavigationManager.NavigateTo("/Category/CategoryConfiguration", true);
+            //     OnHideModalClick();
+            // }
+            // else
+            // {
+
+
+
+            //     OnProccessCompleteNotify();
+
+            // }
+        }
+        else
+        {
+            if (Category.CategoryId != 0)
+            {
+                return new OutputHandler { IsErrorOccured = true, Message = "Something went Wrong" };
+            }
+            // OutputHandler = await _service.Create(Category);
+            // if (OutputHandler.IsErrorOccured == false)
+            // {
+
+                 
+            //     OnProccessCompleteNotify();
+            //     OnHideModalClick();
+            //     NavigationManager.NavigateTo("/Category/CategoryConfiguration", true);
+            // }
+            // else
+            // {
+            //     OnProccessCompleteNotify();
+
+            // }
+        }
+
+        return OutputHandler;
+
+
+    }
+
+
+
+    public void Cancel()
+    {
+        IsCancelRequest = true;
+        NavigationManager.NavigateTo("/Uploads/AllUploads");
+    }
+    public async void Edit(int projectId)
+    {
+        Action = "edit";
+        // Title = "Edit Category ";
+        // Category = await _service.GetCategory(projectId);
+        IsCancelRequest = true;
+        OnShowModalClick();
+    }
+
+
+    public async void Create()
+    {
+        Action = "Create";
+        Title = "Create Category";
+
+        Category = new CategoryDTO { };
+        IsCancelRequest = true;
+        OnShowModalClick();
+    }
+    public async void Delete(int projectId)
+    {
+        IsCancelRequest = true;
+        Title = "Delete Category";
+        Action = "delete";
+        // Category = await _service.GetCategory(projectId);
+        OnShowModalClick();
+    }
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (!firstRender)
+    //     {
+
+    //         bool loggedInUser =  _Utilservice.IsUserAuthenticated();
+    //         if (loggedInUser == false)
+    //         {
+    //             NavigationManager.NavigateTo("/");
+    //         }else
+    //         {
+    //             NavigationManager.NavigateTo("/Login");
+    //         }
+    //     }
+
+    //  }
+    protected async Task ConfirmDelete()
+    {
+        Category.IsDeleted = true;
+        Category.DeletedBy = "Denzel";
+        // Category.DeletedBy = await sessionStorage.GetItemAsync<string>("MachineName");
+        // OutputHandler = await _service.Update(Category);
+        if (OutputHandler.IsErrorOccured == false)
+        {
+            NavigationManager.NavigateTo("/Category/CategoryConfiguration", true);
+
+
+            StateHasChanged();
+            OnProccessCompleteNotify();
+            OnHideModalClick();
+        }
+        else
+        {
+            OnProccessCompleteNotify();
+
+        }
+    }
+    public void PullActions(int projectId)
+    {
+        IsCancelRequest = true;
+        NavigationManager.NavigateTo($"/Category/Tracker/{projectId}");
+    }
+
+
+
+
+
+
+
+    private Modal modal = default!;
+
+    [Inject] ToastService ToastService { get; set; } = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+    private void OnModalShowing()
+    {
+        ToastService.Notify(new(ToastType.Primary, $"Event: Showing called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalShown()
+    {
+        ToastService.Notify(new(ToastType.Success, $"Event: Show called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHiding()
+    {
+        ToastService.Notify(new(ToastType.Danger, $"Event: Hiding called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHidden()
+    {
+        ToastService.Notify(new(ToastType.Warning, $"Event: Hide called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHidePrevented()
+    {
+        ToastService.Notify(new(ToastType.Info, $"Event: Hide Prevented called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnProccessCompleteNotify()
+    {
+        ToastService.Notify(new(ToastType.Info, $"{OutputHandler.Message}"));
+    }
+
+
+
+}
