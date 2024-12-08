@@ -31,6 +31,8 @@
 
     private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
     {
+        await sessionStorage.SetItemAsync("LoggedInUser", "Denzel");
+        await sessionStorage.SetItemAsync("Role", "Admin");
 
         if (navItems is null)
             navItems = GetNavItems();

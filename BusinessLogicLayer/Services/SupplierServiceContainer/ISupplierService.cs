@@ -12,7 +12,8 @@ namespace BusinessLogicLayer.Services.SupplierServiceContainer
     {
         Task<OutputHandler> Create(SupplierDTO supplierDTO);
         Task<OutputHandler> Update(SupplierDTO supplierDTO);
-        Task<OutputHandler> Delete(int SupplierId);
+        Task<OutputHandler> DeleteApprove(SupplierDTO supplierDTO);
+        Task<OutputHandler> DeleteRequest(SupplierDTO supplierDTO);
         Task<IEnumerable<SupplierDTO>> GetAllSuppliers();
         Task<SupplierDTO> GetSupplier(int supplierId);
     }

@@ -12,7 +12,8 @@ namespace BusinessLogicLayer.Services.TransactionTypeServiceContainer
     {
         Task<OutputHandler> Create(TransactionTypeDTO transactionTypeDTO);
         Task<OutputHandler> Update(TransactionTypeDTO transactionTypeDTO);
-        Task<OutputHandler> Delete(int TransactionTypeId);
+        Task<OutputHandler> DeleteApprove(TransactionTypeDTO transactionTypeDTO);
+        Task<OutputHandler> DeleteRequest(TransactionTypeDTO transactionTypeDTO);
         Task<IEnumerable<TransactionTypeDTO>> GetAllTransactionTypes();
         Task<TransactionTypeDTO> GetTransactionType(int transactionTypeId);
     }

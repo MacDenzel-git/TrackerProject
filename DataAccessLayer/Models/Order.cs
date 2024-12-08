@@ -21,6 +21,14 @@ public partial class Order
 
     public DateTime? ModifiedDate { get; set; }
 
+    public bool? IsDeleted { get; set; }
+
+    public string? DeletedBy { get; set; }
+
+    public string? DeletedApprover { get; set; }
+
+    public DateTime? DateDeleted { get; set; }
+
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
     public virtual Supplier? Supplier { get; set; }

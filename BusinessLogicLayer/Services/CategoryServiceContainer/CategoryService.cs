@@ -38,12 +38,16 @@ namespace BusinessLogicLayer.Services.CategoryServiceContainer
         }
 
         //Code for deleting record
-        public async Task<OutputHandler> Delete(int categoryId)
+        public async Task<OutputHandler> DeleteRequest(CategoryDTO category)
         {
 
             try
             {
-                var output = await _category.Delete(x => x.CategoryId == categoryId);
+                //var category = await GetCategory(categoryDTO.CategoryId);
+                category.DeletedBy  = category.LoggedInUsername;
+                category.IsDeleted = true;
+                var mapped = new AutoMapper<CategoryDTO, Category>().MapToObject(category);
+                var output = await _category.Update(mapped);
                 if (output.IsErrorOccured)
                 {
                     return output;
@@ -59,6 +63,35 @@ namespace BusinessLogicLayer.Services.CategoryServiceContainer
                 return StandardMessages.getExceptionMessage(ex);
             }
         }
+
+
+        public async Task<OutputHandler> DeleteApprove(CategoryDTO categoryDTO)
+        {
+
+            try
+            {
+                var category = await GetCategory(categoryDTO.CategoryId);
+                category.IsDeleted = true;
+                 category.DeleteApprover = categoryDTO.LoggedInUsername;
+                category.DateDeleted = DateTime.Now;
+                var mapped = new AutoMapper<CategoryDTO, Category>().MapToObject(category);
+                var output = await _category.Update(mapped);
+                if (output.IsErrorOccured)
+                {
+                    return output;
+                }
+                return new OutputHandler
+                {
+                    IsErrorOccured = false,
+                    Message = StandardMessages.GetSuccessfulMessage() //assign message to the error
+                };
+            }
+            catch (Exception ex)
+            {
+                return StandardMessages.getExceptionMessage(ex);
+            }
+        }
+
 
         public async Task<CategoryDTO> GetCategory(int categoryId)
         {

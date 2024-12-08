@@ -12,7 +12,8 @@ namespace BusinessLogicLayer.Services.OrderServiceContainer
     {
         Task<OutputHandler> Create(OrderDTO orderDTO);
         Task<OutputHandler> Update(OrderDTO orderDTO);
-        Task<OutputHandler> Delete(int OrderId);
+        Task<OutputHandler> DeleteApprove(OrderDTO orderDTO);
+        Task<OutputHandler> DeleteRequest(OrderDTO orderDTO);
         Task<IEnumerable<OrderDTO>> GetAllOrders();
         Task<OrderDTO> GetOrder(int orderId);
     }

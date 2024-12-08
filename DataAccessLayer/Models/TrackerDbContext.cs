@@ -17,6 +17,10 @@ public partial class TrackerDbContext : DbContext
 
     public virtual DbSet<Category> Categories { get; set; }
 
+    public virtual DbSet<Country> Countries { get; set; }
+
+    public virtual DbSet<District> Districts { get; set; }
+
     public virtual DbSet<InventoryTransaction> InventoryTransactions { get; set; }
 
     public virtual DbSet<Order> Orders { get; set; }
@@ -24,6 +28,10 @@ public partial class TrackerDbContext : DbContext
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
+
+    public virtual DbSet<Shop> Shops { get; set; }
+
+    public virtual DbSet<ShopProduct> ShopProducts { get; set; }
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
@@ -45,9 +53,27 @@ public partial class TrackerDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeleteApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<Country>(entity =>
+        {
+            entity.Property(e => e.CountryName).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<District>(entity =>
+        {
+            entity.Property(e => e.DistrictName).HasMaxLength(50);
+
+            entity.HasOne(d => d.Country).WithMany(p => p.Districts)
+                .HasForeignKey(d => d.CountryId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Districts_Districts");
         });
 
         modelBuilder.Entity<InventoryTransaction>(entity =>
@@ -57,18 +83,27 @@ public partial class TrackerDbContext : DbContext
             entity.Property(e => e.TransactionId).HasColumnName("TransactionID");
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeleteApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Notes).IsUnicode(false);
+            entity.Property(e => e.ProductExpiryDate).HasColumnType("datetime");
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
+            entity.Property(e => e.ReceivingShop).HasMaxLength(50);
+            entity.Property(e => e.SendingShop).HasMaxLength(50);
             entity.Property(e => e.TransactionDate).HasColumnType("datetime");
+            entity.Property(e => e.TransactionType).HasMaxLength(50);
 
             entity.HasOne(d => d.Product).WithMany(p => p.InventoryTransactions)
                 .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Produ__59FA5E80");
 
-            entity.HasOne(d => d.TransactionType).WithMany(p => p.InventoryTransactions)
-                .HasForeignKey(d => d.TransactionTypeId)
+            entity.HasOne(d => d.TransactionTypeNavigation).WithMany(p => p.InventoryTransactions)
+                .HasForeignKey(d => d.TransactionType)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Trans__5AEE82B9");
         });
 
@@ -79,6 +114,9 @@ public partial class TrackerDbContext : DbContext
             entity.Property(e => e.OrderId).HasColumnName("OrderID");
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeletedApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.OrderDate).HasColumnType("datetime");
@@ -97,6 +135,9 @@ public partial class TrackerDbContext : DbContext
             entity.Property(e => e.OrderDetailId).HasColumnName("OrderDetailID");
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeleteApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.OrderId).HasColumnName("OrderID");
@@ -120,22 +161,33 @@ public partial class TrackerDbContext : DbContext
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeletedApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
             entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.LastOrderDate).HasColumnType("datetime");
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProductName)
                 .HasMaxLength(255)
                 .IsUnicode(false);
-            entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
 
             entity.HasOne(d => d.Category).WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
                 .HasConstraintName("FK__Products__Catego__4D94879B");
+        });
 
-            entity.HasOne(d => d.Supplier).WithMany(p => p.Products)
-                .HasForeignKey(d => d.SupplierId)
-                .HasConstraintName("FK__Products__Suppli__4E88ABD4");
+        modelBuilder.Entity<Shop>(entity =>
+        {
+            entity.Property(e => e.ShopManagerContact).HasMaxLength(50);
+            entity.Property(e => e.ShopManagerName).HasMaxLength(50);
+            entity.Property(e => e.ShopName).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<ShopProduct>(entity =>
+        {
+            entity.Property(e => e.ProductName).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Supplier>(entity =>
@@ -155,6 +207,9 @@ public partial class TrackerDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeletedApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Phone)
@@ -166,8 +221,12 @@ public partial class TrackerDbContext : DbContext
         {
             entity.HasKey(e => e.TransactionTypeId).HasName("PK__Transact__20266D0B7AFB765E");
 
+            entity.Property(e => e.TransactionTypeId).HasMaxLength(50);
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeletedApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.TransactionTypeName)

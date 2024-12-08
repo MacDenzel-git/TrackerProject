@@ -12,7 +12,8 @@ namespace BusinessLogicLayer.Services.CategoryServiceContainer
     {
         Task<OutputHandler> Create(CategoryDTO categoryDTO);
         Task<OutputHandler> Update(CategoryDTO categoryDTO);
-        Task<OutputHandler> Delete(int CategoryId);
+        Task<OutputHandler> DeleteApprove(CategoryDTO categoryDTO);
+        Task<OutputHandler> DeleteRequest(CategoryDTO categoryDTO);
         Task<IEnumerable<CategoryDTO>> GetAllCategories();
         Task<CategoryDTO> GetCategory(int categoryId);
     }

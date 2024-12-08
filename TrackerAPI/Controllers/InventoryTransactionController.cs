@@ -20,9 +20,9 @@ namespace TrackerAPI.Controllers
         /// <param name="InventoryTransaction"></param>
         /// <returns></returns>
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(InventoryTransactionDTO category)
+        public async Task<IActionResult> Create(InventoryTransactionDTO inventoryTransaction)
         {
-            var outputHandler = await _service.Create(category);
+            var outputHandler = await _service.InBound(inventoryTransaction);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -37,9 +37,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(InventoryTransactionDTO category)
+        public async Task<IActionResult> Update(InventoryTransactionDTO inventoryTransaction)
         {
-            var outputHandler = await _service.Update(category);
+            var outputHandler = await _service.Update(inventoryTransaction);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -71,9 +71,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int InventoryTransactionId)
+        public async Task<IActionResult> Delete(InventoryTransactionDTO inventoryTransaction)
         {
-            var output = await _service.Delete(InventoryTransactionId);
+            var output = await _service.DeleteRequest(inventoryTransaction);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);

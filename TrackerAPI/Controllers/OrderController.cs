@@ -20,9 +20,9 @@ namespace TrackerAPI.Controllers
         /// <param name="Order"></param>
         /// <returns></returns>
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(OrderDTO category)
+        public async Task<IActionResult> Create(OrderDTO order)
         {
-            var outputHandler = await _service.Create(category);
+            var outputHandler = await _service.Create(order);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -37,9 +37,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(OrderDTO category)
+        public async Task<IActionResult> Update(OrderDTO order)
         {
-            var outputHandler = await _service.Update(category);
+            var outputHandler = await _service.Update(order);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -71,9 +71,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int OrderId)
+        public async Task<IActionResult> Delete(OrderDTO order)
         {
-            var output = await _service.Delete(OrderId);
+            var output = await _service.DeleteRequest(order);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);

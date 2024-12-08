@@ -1,6 +1,7 @@
 ﻿using BusinessLogicLayer.Services.OrderDetailServiceContainer;
 using BusinessLogicLayer.Services.SupplierServiceContainer;
 using DataAccessLayer.DataTransferObjects;
+using DataAccessLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TrackerAPI.Controllers
@@ -38,9 +39,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(OrderDetailDTO category)
+        public async Task<IActionResult> Update(OrderDetailDTO orderDetail)
         {
-            var outputHandler = await _service.Update(category);
+            var outputHandler = await _service.Update(orderDetail);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -72,9 +73,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int OrderDetailId)
+        public async Task<IActionResult> Delete(OrderDetailDTO orderDetail)
         {
-            var output = await _service.Delete(OrderDetailId);
+            var output = await _service.DeleteRequest(orderDetail);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);

@@ -57,13 +57,11 @@ namespace TrackerUIWeb.Data.ApiGateway
 
                 var response = await _httpClient.PostAsJsonAsync<T>(endpoint, param);
 
-                if (response.IsSuccessStatusCode)
-                {
+               
                     var result = await response.Content.ReadAsStringAsync();
                     return JsonConvert.DeserializeObject<OutputHandler>(result);
-                }
+                 
 
-                throw new Exception();
             }
             catch (Exception ex)
             {
@@ -78,6 +76,28 @@ namespace TrackerUIWeb.Data.ApiGateway
                 endpoint = $"{_httpClient.BaseAddress}{endpoint}";
 
                 var response = await _httpClient.DeleteAsync($"{endpoint}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<OutputHandler>(result);
+                }
+                throw new Exception();
+                //  return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+        public async Task<OutputHandler> Delete<T>(string endpoint, T param)
+        {
+            try
+            {
+                endpoint = $"{_httpClient.BaseAddress}{endpoint}";
+
+                var response = await _httpClient.PostAsJsonAsync($"{endpoint}",param);
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadAsStringAsync();

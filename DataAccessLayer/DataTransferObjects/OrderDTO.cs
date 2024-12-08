@@ -15,9 +15,12 @@ namespace DataAccessLayer.DataTransferObjects
         public int? SupplierId { get; set; }
 
         public decimal? TotalAmount { get; set; }
+        public bool? IsDeleted { get; set; }
 
+        public string? DeletedBy { get; set; }
         public string? CreatedBy { get; set; }
-
+        public DateTime DateDeleted { get; set; }
+        public string DeleteApprover { get; set; }
         public DateTime? CreatedDate { get; set; }
 
         public string? ModifiedBy { get; set; }

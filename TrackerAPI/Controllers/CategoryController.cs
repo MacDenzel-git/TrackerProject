@@ -71,16 +71,37 @@ namespace TrackerAPI.Controllers
         /// <param name="CategoryId"></param>
         /// <returns></returns>
         /// 
-        [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int CategoryId)
+        [HttpPost("DeleteRequest")]
+        public async Task<IActionResult> Delete(CategoryDTO categoryDTO)
         {
-            var output = await _service.Delete(CategoryId);
+            var output = await _service.DeleteRequest(categoryDTO);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);
             }
             return Ok(output);
         }
+
+
+
+
+        /// <summary>
+        /// This is the API that deletes a client Type
+        /// </summary>
+        /// <param name="CategoryId"></param>
+        /// <returns></returns>
+        /// 
+        [HttpPost("DeleteApproval")]
+        public async Task<IActionResult> DeleteApproval(CategoryDTO categoryDTO)
+        {
+            var output = await _service.DeleteApprove(categoryDTO);
+            if (output.IsErrorOccured)
+            {
+                return BadRequest(output);
+            }
+            return Ok(output);
+        }
+
 
 
 

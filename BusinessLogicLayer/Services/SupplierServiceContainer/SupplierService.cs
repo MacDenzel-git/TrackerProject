@@ -38,12 +38,16 @@ namespace BusinessLogicLayer.Services.SupplierServiceContainer
         }
 
         //Code for deleting record
-        public async Task<OutputHandler> Delete(int supplierId)
+        public async Task<OutputHandler> DeleteRequest(SupplierDTO supplierDTO)
         {
 
             try
             {
-                var output = await _supplier.Delete(x => x.SupplierId == supplierId);
+                var supplier = await GetSupplier(supplierDTO.SupplierId);
+                supplier.DeletedBy = supplierDTO.LoggedInUsername;
+
+                var mapped = new AutoMapper<SupplierDTO, Supplier>().MapToObject(supplier);
+                var output = await _supplier.Update(mapped);
                 if (output.IsErrorOccured)
                 {
                     return output;
@@ -59,6 +63,35 @@ namespace BusinessLogicLayer.Services.SupplierServiceContainer
                 return StandardMessages.getExceptionMessage(ex);
             }
         }
+
+
+        public async Task<OutputHandler> DeleteApprove(SupplierDTO supplierDTO)
+        {
+
+            try
+            {
+                var supplier = await GetSupplier(supplierDTO.SupplierId);
+                supplier.IsDeleted = true;
+                supplier.DeleteApprover = supplierDTO.LoggedInUsername;
+                supplier.DateDeleted = DateTime.Now;
+                var mapped = new AutoMapper<SupplierDTO, Supplier>().MapToObject(supplier);
+                var output = await _supplier.Update(mapped);
+                if (output.IsErrorOccured)
+                {
+                    return output;
+                }
+                return new OutputHandler
+                {
+                    IsErrorOccured = false,
+                    Message = StandardMessages.GetSuccessfulMessage() //assign message to the error
+                };
+            }
+            catch (Exception ex)
+            {
+                return StandardMessages.getExceptionMessage(ex);
+            }
+        }
+
 
         public async Task<SupplierDTO> GetSupplier(int supplierId)
         {

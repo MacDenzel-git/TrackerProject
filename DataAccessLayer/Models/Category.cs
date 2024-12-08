@@ -19,5 +19,13 @@ public partial class Category
 
     public DateTime? ModifiedDate { get; set; }
 
+    public bool? IsDeleted { get; set; }
+
+    public string? DeletedBy { get; set; }
+
+    public DateTime? DateDeleted { get; set; }
+
+    public string? DeleteApprover { get; set; }
+
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

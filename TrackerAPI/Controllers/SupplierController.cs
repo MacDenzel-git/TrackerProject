@@ -70,10 +70,12 @@ namespace TrackerAPI.Controllers
         /// <param name="SupplierId"></param>
         /// <returns></returns>
         /// 
-        [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int SupplierId)
+        
+
+        [HttpPost("DeleteRequest")]
+        public async Task<IActionResult> Delete(SupplierDTO supplier)
         {
-            var output = await _service.Delete(SupplierId);
+            var output = await _service.DeleteRequest(supplier);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);
@@ -82,6 +84,24 @@ namespace TrackerAPI.Controllers
         }
 
 
+
+
+        /// <summary>
+        /// This is the API that deletes a client Type
+        /// </summary>
+        /// <param name="CategoryId"></param>
+        /// <returns></returns>
+        /// 
+        [HttpPost("DeleteApproval")]
+        public async Task<IActionResult> DeleteApproval(SupplierDTO supplier)
+        {
+            var output = await _service.DeleteApprove(supplier);
+            if (output.IsErrorOccured)
+            {
+                return BadRequest(output);
+            }
+            return Ok(output);
+        }
 
         /// <summary>
         /// This is API that gets a client Type

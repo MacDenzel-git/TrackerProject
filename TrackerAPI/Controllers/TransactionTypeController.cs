@@ -37,9 +37,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(TransactionTypeDTO category)
+        public async Task<IActionResult> Update(TransactionTypeDTO transactionTypeDTO)
         {
-            var outputHandler = await _service.Update(category);
+            var outputHandler = await _service.Update(transactionTypeDTO);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -70,10 +70,10 @@ namespace TrackerAPI.Controllers
         /// <param name="TransactionTypeId"></param>
         /// <returns></returns>
         /// 
-        [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int TransactionTypeId)
+        [HttpDelete("DeleteRequest")]
+        public async Task<IActionResult> Delete(TransactionTypeDTO transactionTypeDTO)
         {
-            var output = await _service.Delete(TransactionTypeId);
+            var output = await _service.DeleteRequest(transactionTypeDTO);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);

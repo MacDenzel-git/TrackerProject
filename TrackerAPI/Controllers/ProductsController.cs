@@ -42,9 +42,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(ProductDTO category)
+        public async Task<IActionResult> Update(ProductDTO product)
         {
-            var outputHandler = await _service.Update(category);
+            var outputHandler = await _service.Update(product);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -76,9 +76,9 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(int ProductId)
+        public async Task<IActionResult> Delete(ProductDTO product)
         {
-            var output = await _service.Delete(ProductId);
+            var output = await _service.DeleteRequest(product);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);

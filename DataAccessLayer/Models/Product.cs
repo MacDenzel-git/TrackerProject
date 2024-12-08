@@ -13,13 +13,13 @@ public partial class Product
 
     public int? CategoryId { get; set; }
 
-    public int? SupplierId { get; set; }
-
     public int? QuantityInStock { get; set; }
 
     public int? ReorderLevel { get; set; }
 
     public decimal? Price { get; set; }
+
+    public int? ShopId { get; set; }
 
     public string? CreatedBy { get; set; }
 
@@ -29,11 +29,21 @@ public partial class Product
 
     public DateTime? ModifiedDate { get; set; }
 
+    public bool? IsDeleted { get; set; }
+
+    public string? DeletedBy { get; set; }
+
+    public string? DeletedApprover { get; set; }
+
+    public DateTime? DateDeleted { get; set; }
+
+    public DateTime? LastOrderDate { get; set; }
+
+    public int ProductIdentifier { get; set; }
+
     public virtual Category? Category { get; set; }
 
     public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-
-    public virtual Supplier? Supplier { get; set; }
 }

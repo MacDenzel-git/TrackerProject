@@ -38,13 +38,16 @@ namespace BusinessLogicLayer.Services.TransactionTypeServiceContainer
 
         }
 
-        //Code for deleting record
-        public async Task<OutputHandler> Delete(int transactionTypeId)
+        public async Task<OutputHandler> DeleteRequest(TransactionTypeDTO transactionTypeDTO)
         {
 
             try
             {
-                var output = await _transactionType.Delete(x => x.TransactionTypeId == transactionTypeId);
+                var transactionType = await GetTransactionType(transactionTypeDTO.TransactionTypeId);
+                transactionType.DeletedBy = transactionTypeDTO.LoggedInUsername;
+
+                var mapped = new AutoMapper<TransactionTypeDTO, TransactionType>().MapToObject(transactionType);
+                var output = await _transactionType.Update(mapped);
                 if (output.IsErrorOccured)
                 {
                     return output;
@@ -60,6 +63,35 @@ namespace BusinessLogicLayer.Services.TransactionTypeServiceContainer
                 return StandardMessages.getExceptionMessage(ex);
             }
         }
+
+
+        public async Task<OutputHandler> DeleteApprove(TransactionTypeDTO transactionTypeDTO)
+        {
+
+            try
+            {
+                var transactionType = await GetTransactionType(transactionTypeDTO.TransactionTypeId);
+                transactionType.IsDeleted = true;
+                transactionType.DeleteApprover = transactionTypeDTO.LoggedInUsername;
+                transactionType.DateDeleted = DateTime.Now;
+                var mapped = new AutoMapper<TransactionTypeDTO, TransactionType>().MapToObject(transactionType);
+                var output = await _transactionType.Update(mapped);
+                if (output.IsErrorOccured)
+                {
+                    return output;
+                }
+                return new OutputHandler
+                {
+                    IsErrorOccured = false,
+                    Message = StandardMessages.GetSuccessfulMessage() //assign message to the error
+                };
+            }
+            catch (Exception ex)
+            {
+                return StandardMessages.getExceptionMessage(ex);
+            }
+        }
+
 
         public async Task<TransactionTypeDTO> GetTransactionType(int transactionTypeId)
         {

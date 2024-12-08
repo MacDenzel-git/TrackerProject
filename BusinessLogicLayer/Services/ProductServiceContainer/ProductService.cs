@@ -42,12 +42,16 @@ namespace BusinessLogicLayer.Services.ProductServiceContainer
         }
 
         //Code for deleting record
-        public async Task<OutputHandler> Delete(int productId)
+        public async Task<OutputHandler> DeleteRequest(ProductDTO productDTO)
         {
 
             try
             {
-                var output = await _product.Delete(x => x.ProductId == productId);
+                var product = await GetProduct(productDTO.ProductId);
+                product.DeletedBy = productDTO.LoggedInUsername;
+
+                var mapped = new AutoMapper<ProductDTO, Product>().MapToObject(product);
+                var output = await _product.Update(mapped);
                 if (output.IsErrorOccured)
                 {
                     return output;
@@ -63,6 +67,35 @@ namespace BusinessLogicLayer.Services.ProductServiceContainer
                 return StandardMessages.getExceptionMessage(ex);
             }
         }
+
+
+        public async Task<OutputHandler> DeleteApprove(ProductDTO productDTO)
+        {
+
+            try
+            {
+                var product = await GetProduct(productDTO.ProductId);
+                product.IsDeleted = true;
+                product.DeletedApprover = productDTO.LoggedInUsername;
+                product.DateDeleted = DateTime.Now;
+                var mapped = new AutoMapper<ProductDTO, Product>().MapToObject(product);
+                var output = await _product.Update(mapped);
+                if (output.IsErrorOccured)
+                {
+                    return output;
+                }
+                return new OutputHandler
+                {
+                    IsErrorOccured = false,
+                    Message = StandardMessages.GetSuccessfulMessage() //assign message to the error
+                };
+            }
+            catch (Exception ex)
+            {
+                return StandardMessages.getExceptionMessage(ex);
+            }
+        }
+
 
         public async Task<ProductDTO> GetProduct(int productId)
         {
@@ -95,7 +128,10 @@ namespace BusinessLogicLayer.Services.ProductServiceContainer
             }
         }
 
-
+        public async Task<ProductDTO> GetProductByBranch(int productId, int shopId)
+        {
+            return new AutoMapper<Product, ProductDTO>().MapToObject(await _product.GetSingleItem(x => x.ProductId == productId /*&& x.shopId == shopId*/));
+        }
     }
 
 }

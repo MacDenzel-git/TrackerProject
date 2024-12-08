@@ -12,8 +12,10 @@ namespace BusinessLogicLayer.Services.ProductsServiceContainer
     {
         Task<OutputHandler> Create(ProductDTO productDTO);
         Task<OutputHandler> Update(ProductDTO productDTO);
-        Task<OutputHandler> Delete(int ProductId);
+        Task<OutputHandler> DeleteApprove(ProductDTO productDTO);
+        Task<OutputHandler> DeleteRequest(ProductDTO productDTO);
         Task<IEnumerable<ProductDTO>> GetAllProducts();
         Task<ProductDTO> GetProduct(int productId);
+        Task<ProductDTO> GetProductByBranch(int productId, string shop);
     }
 }

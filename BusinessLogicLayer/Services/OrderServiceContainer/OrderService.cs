@@ -39,12 +39,44 @@ namespace BusinessLogicLayer.Services.OrderServiceContainer
         }
 
         //Code for deleting record
-        public async Task<OutputHandler> Delete(int orderId)
+        public async Task<OutputHandler> DeleteRequest(OrderDTO orderDTO)
         {
 
             try
             {
-                var output = await _order.Delete(x => x.OrderId == orderId);
+                var order = await GetOrder(orderDTO.OrderId);
+                order.DeletedBy = orderDTO.LoggedInUsername;
+
+                var mapped = new AutoMapper<OrderDTO, Order>().MapToObject(order);
+                var output = await _order.Update(mapped);
+                if (output.IsErrorOccured)
+                {
+                    return output;
+                }
+                return new OutputHandler
+                {
+                    IsErrorOccured = false,
+                    Message = StandardMessages.GetSuccessfulMessage() //assign message to the error
+                };
+            }
+            catch (Exception ex)
+            {
+                return StandardMessages.getExceptionMessage(ex);
+            }
+        }
+
+
+        public async Task<OutputHandler> DeleteApprove(OrderDTO orderDTO)
+        {
+
+            try
+            {
+                var order = await GetOrder(orderDTO.OrderId);
+                order.IsDeleted = true;
+                order.DeleteApprover = orderDTO.LoggedInUsername;
+                order.DateDeleted = DateTime.Now;
+                var mapped = new AutoMapper<OrderDTO, Order>().MapToObject(order);
+                var output = await _order.Update(mapped);
                 if (output.IsErrorOccured)
                 {
                     return output;

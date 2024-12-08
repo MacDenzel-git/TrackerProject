@@ -20,7 +20,9 @@ namespace DataAccessLayer.DataTransferObjects
         public string? ModifiedBy { get; set; }
         public string? DeletedBy { get; set; }
         public bool IsDeleted { get; set; }
+        public DateTime? DateDeleted { get; set; }
 
+        public string? DeleteApprover { get; set; }
         public DateTime? ModifiedDate { get; set; }
     }
 }

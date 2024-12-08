@@ -25,7 +25,13 @@ public partial class Supplier
 
     public DateTime? ModifiedDate { get; set; }
 
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public bool? IsDeleted { get; set; }
 
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+    public string? DeletedBy { get; set; }
+
+    public string? DeletedApprover { get; set; }
+
+    public DateTime? DateDeleted { get; set; }
+
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }
