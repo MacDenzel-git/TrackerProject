@@ -1,0 +1,160 @@
+﻿@page "/Dashboard/ShopView"
+
+
+@using DataAccessLayer.DataTransferObjects
+@using TrackerUIWeb.Data.DataTransferObjects
+<h3>ShopView</h3>
+
+
+<div class="row">
+    <div class="col-3">Mzuzu Shop</div>
+    <div class="col-9 text-start">
+        <div class="row">
+            <div class="col-6">Shop Supervisor: James Phiri</div>
+            <div class="col-6"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-6">
+      <p>Product Summary</p>
+        @if (ProductList is null)
+        {
+
+        }
+        else
+        {
+            @if (ProductList.Count() == 0)
+            {
+                <div class="spinner"></div>
+            }
+            else
+            {
+       
+                <br />
+                <table class="table table-striped table-sm align-middle table-bordered">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Product Name </th>
+                            <th>Current Stock</th>
+                         </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ProductList)
+                        {
+                            <tr>
+
+                                <td>@item.ProductName</td>
+                                <td class="text">@item.QuantityInStock</td>
+                                 
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+
+            }
+        }
+    </div>
+    <div class="col-6">
+        <p>Inventory Movement</p>
+
+        @if (ProductList is null)
+        {
+
+        }
+        else
+        {
+            @if (ProductList.Count() == 0)
+            {
+                <div class="spinner"></div>
+            }
+            else
+            {
+
+                <br />
+                <table class="table table-striped table-sm align-middle table-bordered">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Product Name </th>
+                            <th>Current Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ProductList)
+                        {
+                            <tr>
+
+                                <td>@item.ProductName</td>
+                                <td class="text">@item.QuantityInStock</td>
+
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+
+            }
+        }
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-6">
+        <button class="m-1 btn btn-sm btn-danger" >Add Product to Shop</button>
+        <button class="m-1 btn btn-sm btn-danger" >Transfer Products</button>
+        <button class="m-1 btn btn-sm btn-danger" >Restock</button>
+    </div>
+    <div class="col-6"></div>
+</div>
+
+<div class="row">
+    <p>Sales</p>
+    <div class="col-6">
+        @if (ProductList is null)
+        {
+
+        }
+        else
+        {
+            @if (ProductList.Count() == 0)
+            {
+                <div class="spinner"></div>
+            }
+            else
+            {
+         
+                <br />
+                <table class="table table-striped table-sm align-middle table-bordered">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Product Name </th>
+                            <th>Current Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ProductList)
+                        {
+                            <tr>
+
+                                <td>@item.ProductName</td>
+                                <td class="text">@item.QuantityInStock</td>
+
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+
+            }
+        }
+    </div>
+    <div class="col-6"></div>
+</div>
+
+@code {
+    private IEnumerable<ShopProductDTO> ProductList = new List<ShopProductDTO> { };
+    private IEnumerable<InventoryTransactionDTO> InventoryTransactionDTOList = new List<InventoryTransactionDTO> { };
+}

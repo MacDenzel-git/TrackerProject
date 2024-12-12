@@ -26,6 +26,4 @@ public partial class Category
     public DateTime? DateDeleted { get; set; }
 
     public string? DeleteApprover { get; set; }
-
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

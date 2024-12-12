@@ -10,11 +10,16 @@ namespace DataAccessLayer.DataTransferObjects
     {
         public int TransactionId { get; set; }
 
-        public int? ProductId { get; set; }
+        public int? ShopProductID { get; set; }
 
         public DateTime? TransactionDate { get; set; }
+        public string ReceivingShop { get; set; } = null!;
 
-        public int? TransactionTypeId { get; set; }
+        public string SendingShop { get; set; } = null!;
+        public string ProductName { get; set; } = null!;
+
+        public DateTime ProductExpiryDate { get; set; }
+        public string TransactionType { get; set; }
 
         public int? Quantity { get; set; }
 
@@ -25,7 +30,12 @@ namespace DataAccessLayer.DataTransferObjects
         public DateTime? CreatedDate { get; set; }
 
         public string? ModifiedBy { get; set; }
-
+ 
         public DateTime? ModifiedDate { get; set; }
+
+        public bool? IsDeleted { get; set; }
+        public DateTime DateDeleted { get; set; }
+        public string DeleteApprover { get; set; }
+        public string? DeletedBy { get; set; }
     }
 }

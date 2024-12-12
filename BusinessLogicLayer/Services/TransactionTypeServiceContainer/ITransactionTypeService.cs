@@ -15,6 +15,6 @@ namespace BusinessLogicLayer.Services.TransactionTypeServiceContainer
         Task<OutputHandler> DeleteApprove(TransactionTypeDTO transactionTypeDTO);
         Task<OutputHandler> DeleteRequest(TransactionTypeDTO transactionTypeDTO);
         Task<IEnumerable<TransactionTypeDTO>> GetAllTransactionTypes();
-        Task<TransactionTypeDTO> GetTransactionType(int transactionTypeId);
+        //Task<TransactionTypeDTO> GetTransactionType(int transactionTypeId);
     }
 }

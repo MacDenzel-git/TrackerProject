@@ -17,6 +17,7 @@ namespace DataAccessLayer.DataTransferObjects
         public string SendingShop { get; set; }
         public string ReceivingShop { get; set; }
         public string InitiatingPersonel { get; set; }
+        public DateTime ProductExpiryDate { get; set; }
         public string TransferApprovalPersonel { get; set; }
     }
 }

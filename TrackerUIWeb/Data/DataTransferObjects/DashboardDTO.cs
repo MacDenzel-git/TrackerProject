@@ -10,6 +10,9 @@ namespace DataAccessLayer.DataTransferObject
     {
         public List<BarChartDTO> BarChart { get; set; }
         public  List<BarChartDTO> PieChart { get; set; }
-        //public List<ProjectDTO> Projects { get; set; }
+        public int ExpiringProductsCount { get; set; }
+        public int LowLevelCount { get; set; }
+
+
     }
 }

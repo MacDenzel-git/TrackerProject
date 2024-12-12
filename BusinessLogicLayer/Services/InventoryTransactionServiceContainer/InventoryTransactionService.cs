@@ -11,6 +11,7 @@ using DataAccessLayer.GenericRepository;
 using BusinessLogicLayer.Services.InventoryTransactionsServiceContainer;
 using BusinessLogicLayer.Services.OrderServiceContainer;
 using BusinessLogicLayer.Services.ProductsServiceContainer;
+using BusinessLogicLayer.Services.ShopProductServiceContainer;
 
 namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
 {
@@ -18,9 +19,9 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
     public class InventoryTransactionService : IInventoryTransactionService
     {
         private readonly GenericRepository<InventoryTransaction> _inventoryTransaction;
-        private readonly IProductService _productService;
+        private readonly IShopProductService _productService;
 
-        public InventoryTransactionService(GenericRepository<InventoryTransaction> inventoryTransaction, IProductService productService)
+        public InventoryTransactionService(GenericRepository<InventoryTransaction> inventoryTransaction, IShopProductService productService)
         {
             _inventoryTransaction = inventoryTransaction;
             _productService = productService;
@@ -32,8 +33,8 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                 var mapped = new AutoMapper<InventoryTransactionDTO, InventoryTransaction>().MapToObject(inventoryTransactionDTO);
                 mapped.CreatedDate = DateTime.Now;
                 mapped.CreatedBy = inventoryTransactionDTO.LoggedInUsername;
-
-                var product = await _productService.GetProductByBranch(inventoryTransactionDTO.ProductId, inventoryTransactionDTO.ReceivingShop);
+                mapped.TransactionType = "INBOUND";
+                var product = await _productService.GetShopProductByBranch(inventoryTransactionDTO.ProductId, inventoryTransactionDTO.ReceivingShop);
                 if (product != null)
                 {
                     product.QuantityInStock += inventoryTransactionDTO.Quantity;
@@ -59,21 +60,19 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
         {
             try
             {
+
                 var mapped = new AutoMapper<InventoryTransactionDTO, InventoryTransaction>().MapToObject(inventoryTransactionDTO);
                 mapped.CreatedDate = DateTime.Now;
                 mapped.CreatedBy = inventoryTransactionDTO.LoggedInUsername;
 
-                var product = await _productService.GetProductByBranch(inventoryTransactionDTO.ProductId, inventoryTransactionDTO.BranchId);
-                if (inventoryTransactionDTO.TransactionTypeId == 1) //inbound
+                var product = await _productService.GetShopProductByBranch(inventoryTransactionDTO.ProductId, inventoryTransactionDTO.ReceivingShop);
+                if (inventoryTransactionDTO.TransactionType == "OUTBOUND") //inbound
                 {
 
                     product.QuantityInStock += inventoryTransactionDTO.Quantity;
                 }
 
-                if (inventoryTransactionDTO.TransactionTypeId == 2) //outbound 
-                {
-                    product.QuantityInStock -= inventoryTransactionDTO.Quantity;
-                }
+                
 
 
                 var result = await _inventoryTransaction.Create(mapped);
@@ -93,25 +92,31 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
 
                 var inventory = new InventoryTransactionDTO
                 {
-                    ProductId = inventoryTransferTransactionDTO.ProductId,
+                    ProductId = inventoryTransferTransactionDTO.ProductId, //PRODUCT IDENTIFIER--> PRODUCT TABLE
                     TransactionDate = DateTime.Now, 
                     Quantity = inventoryTransferTransactionDTO.Quantity,
                     Notes = inventoryTransferTransactionDTO.ReasonForTransfer, //reason
                      SendingShop = inventoryTransferTransactionDTO.SendingShop, 
                      ReceivingShop = inventoryTransferTransactionDTO.ReceivingShop,
-                 };
+                     TransactionType = "TRANSFER",
+                     ProductExpiryDate = inventoryTransferTransactionDTO.ProductExpiryDate
+                };
 
 
                 var mapped = new AutoMapper<InventoryTransactionDTO, InventoryTransaction>().MapToObject(inventory);
                 mapped.CreatedDate = DateTime.Now;
                 mapped.CreatedBy = inventoryTransferTransactionDTO.LoggedInUsername;
+                
 
-                var product = await _productService.GetProductByBranch(inventoryTransferTransactionDTO.ProductId, inventoryTransferTransactionDTO.BranchId);
-              
                 //move 4m shop 1
-
+                var SendingShopProduct = await _productService.GetShopProductByBranch(inventoryTransferTransactionDTO.ProductId, inventoryTransferTransactionDTO.SendingShop);
+                SendingShopProduct.QuantityInStock -= inventoryTransferTransactionDTO.Quantity; //remove stock from sending shop
+                var sendingUpdate = await _productService.Update(SendingShopProduct);
 
                 //add shop 2
+                var ReceivinShopProduct = await _productService.GetShopProductByBranch(inventoryTransferTransactionDTO.ProductId, inventoryTransferTransactionDTO.ReceivingShop);
+                ReceivinShopProduct.QuantityInStock += inventoryTransferTransactionDTO.Quantity; //add stock to receiving shop
+                var receivingUpdate = await _productService.Update(ReceivinShopProduct);
 
 
 
@@ -169,6 +174,12 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                 {
                     return output;
                 }
+
+                var SendingShopProduct = await _productService.GetShopProductByBranch(inventoryTransactionDTO.ProductId, inventoryTransactionDTO.SendingShop);
+                SendingShopProduct.QuantityInStock -= inventoryTransactionDTO.Quantity; //remove stock from sending shop
+                var sendingUpdate = await _productService.Update(SendingShopProduct);
+
+
                 return new OutputHandler
                 {
                     IsErrorOccured = false,

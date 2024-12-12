@@ -58,7 +58,7 @@ namespace TrackerUIWeb.Data.ApiGateway
                 var response = await _httpClient.PostAsJsonAsync<T>(endpoint, param);
 
                
-                    var result = await response.Content.ReadAsStringAsync();
+              var result = await response.Content.ReadAsStringAsync();
                     return JsonConvert.DeserializeObject<OutputHandler>(result);
                  
 

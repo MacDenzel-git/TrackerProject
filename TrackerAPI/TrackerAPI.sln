@@ -5,11 +5,11 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrackerAPI", "TrackerAPI.csproj", "{41A97519-4D4B-4147-8D09-15502EA38962}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "..\DataAccessLayer\DataAccessLayer.csproj", "{B9475E0A-A0FB-473C-BB75-AC12703CB77D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccessLayer", "..\DataAccessLayer\DataAccessLayer.csproj", "{B9475E0A-A0FB-473C-BB75-AC12703CB77D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLogicLayer", "..\BusinessLogicLayer\BusinessLogicLayer.csproj", "{0342238B-7C9A-4E70-BD53-383A2BA61A57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusinessLogicLayer", "..\BusinessLogicLayer\BusinessLogicLayer.csproj", "{0342238B-7C9A-4E70-BD53-383A2BA61A57}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackerUIWeb", "..\TrackerUIWeb\TrackerUIWeb.csproj", "{EC458EE1-5866-4B45-81FB-BB84A3B0448B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrackerUIWeb", "..\TrackerUIWeb\TrackerUIWeb.csproj", "{EC458EE1-5866-4B45-81FB-BB84A3B0448B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

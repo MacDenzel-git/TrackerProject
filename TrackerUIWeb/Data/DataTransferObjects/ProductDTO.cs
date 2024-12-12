@@ -17,12 +17,6 @@ namespace DataAccessLayer.DataTransferObjects
         public int? CategoryId { get; set; }
 
 
-        public int? QuantityInStock { get; set; }
-
-        public int? ReorderLevel { get; set; }
-
-        public decimal? Price { get; set; }
-
         public string? CreatedBy { get; set; }
 
         public DateTime? CreatedDate { get; set; }
@@ -39,7 +33,7 @@ namespace DataAccessLayer.DataTransferObjects
 
         public DateTime? DateDeleted { get; set; }
 
-   
+
 
     }
 }

@@ -6,19 +6,27 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.DataTransferObjects
 {
-    public class ProductDTO : UserInformationDTO
+    public class ShopProductDTO : UserInformationDTO
     {
-        public int ProductId { get; set; }
+        public int ShopProductID { get; set; }
 
         public string ProductName { get; set; } = null!;
 
         public string? Description { get; set; }
 
-        public int? CategoryId { get; set; }
- 
-       
+
+        public int? ShopId { get; set; }
+
+        public int? QuantityInStock { get; set; }
+
+        public int? ReorderLevel { get; set; }
+        public int ProductId { get; set; }
+
+        public decimal? Price { get; set; }
+
         public string? CreatedBy { get; set; }
-       
+        public DateTime? LastOrderDate { get; set; }
+
         public DateTime? CreatedDate { get; set; }
 
         public string? ModifiedBy { get; set; }

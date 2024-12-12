@@ -11,8 +11,7 @@ using DataAccessLayer.GenericRepository;
 using BusinessLogicLayer.Services.ProductsServiceContainer;
 using BusinessLogicLayer.Services.OrderServiceContainer;
 using BusinessLogicLayer.Services.OrderDetailServiceContainer;
-using BusinessLogicLayer.Services.TransactionTypeServiceContainer;
-
+ 
 namespace BusinessLogicLayer.Services.ProductServiceContainer
 {
 
@@ -28,6 +27,7 @@ namespace BusinessLogicLayer.Services.ProductServiceContainer
             try
             {
                 var mapped = new AutoMapper<ProductDTO, Product>().MapToObject(productDTO);
+                
                 mapped.CreatedDate = DateTime.Now;
                 mapped.CreatedBy = productDTO.LoggedInUsername;
                 var result = await _product.Create(mapped);
@@ -128,10 +128,9 @@ namespace BusinessLogicLayer.Services.ProductServiceContainer
             }
         }
 
-        public async Task<ProductDTO> GetProductByBranch(int productId, int shopId)
-        {
-            return new AutoMapper<Product, ProductDTO>().MapToObject(await _product.GetSingleItem(x => x.ProductId == productId /*&& x.shopId == shopId*/));
-        }
+      
+        
+        
     }
 
 }

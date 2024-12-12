@@ -1,8 +1,7 @@
 ﻿using BusinessLogicLayer.Services.OrderDetailServiceContainer;
 using BusinessLogicLayer.Services.OrderServiceContainer;
-using BusinessLogicLayer.Services.ProductServiceContainer;
-using BusinessLogicLayer.Services.ProductsServiceContainer;
-using BusinessLogicLayer.Services.SupplierServiceContainer;
+using BusinessLogicLayer.Services.ShopProductServiceContainer;
+ using BusinessLogicLayer.Services.SupplierServiceContainer;
  using DataAccessLayer.DataTransferObjects;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,10 +9,10 @@ namespace TrackerAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ShopProductController : ControllerBase
     {
-        private readonly IProductService _service;
-        public ProductController(IProductService service)
+        private readonly IShopProductService _service;
+        public ShopProductController(IShopProductService service)
         {
             _service = service;
         }
@@ -21,10 +20,10 @@ namespace TrackerAPI.Controllers
         /// <summary>
         /// This is the API for creating client Type
         /// </summary>
-        /// <param name="Product"></param>
+        /// <param name="ShopProduct"></param>
         /// <returns></returns>
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(ProductDTO category)
+        public async Task<IActionResult> Create(ShopProductDTO category)
         {
             var outputHandler = await _service.Create(category);
             if (outputHandler.IsErrorOccured)
@@ -37,13 +36,13 @@ namespace TrackerAPI.Controllers
         /// <summary>
         /// This is the API for updating client Type
         /// </summary>
-        /// <param name="Product"></param>
+        /// <param name="ShopProduct"></param>
         /// <returns></returns>
         /// 
         [HttpPut("Update")]
-        public async Task<IActionResult> Update(ProductDTO product)
+        public async Task<IActionResult> Update(ShopProductDTO shopProduct)
         {
-            var outputHandler = await _service.Update(product);
+            var outputHandler = await _service.Update(shopProduct);
             if (outputHandler.IsErrorOccured)
             {
                 return BadRequest(outputHandler);
@@ -57,10 +56,10 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
 
-        [HttpGet("GetAllProducts")]
-        public async Task<IActionResult> GetAllProducts()
+        [HttpGet("GetAllShopProducts")]
+        public async Task<IActionResult> GetAllShopProducts()
         {
-            var output = await _service.GetAllProducts();
+            var output = await _service.GetAllShopProducts();
             if (output != null)
             {
                 return Ok(output);
@@ -71,13 +70,13 @@ namespace TrackerAPI.Controllers
         /// <summary>
         /// This is the API that deletes a client Type
         /// </summary>
-        /// <param name="ProductId"></param>
+        /// <param name="ShopProductId"></param>
         /// <returns></returns>
         /// 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(ProductDTO product)
+        public async Task<IActionResult> Delete(ShopProductDTO shopProduct)
         {
-            var output = await _service.DeleteRequest(product);
+            var output = await _service.DeleteRequest(shopProduct);
             if (output.IsErrorOccured)
             {
                 return BadRequest(output);
@@ -94,10 +93,10 @@ namespace TrackerAPI.Controllers
         /// <returns></returns>
         /// 
 
-        [HttpGet("GetProduct")]
-        public async Task<IActionResult> GetProduct(int ProductId)
+        [HttpGet("GetShopProduct")]
+        public async Task<IActionResult> GetShopProduct(int ShopProductId)
         {
-            var output = await _service.GetProduct(ProductId);
+            var output = await _service.GetShopProduct(ShopProductId);
             if (output != null)
             {
                 return Ok(output);

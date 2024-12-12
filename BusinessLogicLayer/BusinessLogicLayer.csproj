@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\TransactionTypeServiceContainer\**" />
+    <EmbeddedResource Remove="Services\TransactionTypeServiceContainer\**" />
+    <None Remove="Services\TransactionTypeServiceContainer\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DataAccessLayer\DataAccessLayer.csproj" />
   </ItemGroup>
 

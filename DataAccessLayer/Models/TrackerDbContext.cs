@@ -23,11 +23,15 @@ public partial class TrackerDbContext : DbContext
 
     public virtual DbSet<InventoryTransaction> InventoryTransactions { get; set; }
 
+    public virtual DbSet<JournalEntry> JournalEntries { get; set; }
+
     public virtual DbSet<Order> Orders { get; set; }
 
     public virtual DbSet<OrderDetail> OrderDetails { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
+
+    public virtual DbSet<ReorderAlert> ReorderAlerts { get; set; }
 
     public virtual DbSet<Shop> Shops { get; set; }
 
@@ -90,14 +94,16 @@ public partial class TrackerDbContext : DbContext
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Notes).IsUnicode(false);
             entity.Property(e => e.ProductExpiryDate).HasColumnType("datetime");
-            entity.Property(e => e.ProductId).HasColumnName("ProductID");
+            entity.Property(e => e.ProductName).HasMaxLength(50);
             entity.Property(e => e.ReceivingShop).HasMaxLength(50);
             entity.Property(e => e.SendingShop).HasMaxLength(50);
+            entity.Property(e => e.ShopProductId).HasColumnName("ShopProductID");
             entity.Property(e => e.TransactionDate).HasColumnType("datetime");
             entity.Property(e => e.TransactionType).HasMaxLength(50);
+            entity.Property(e => e.UnitPriceOfPreviousStock).HasColumnType("decimal(10, 2)");
 
-            entity.HasOne(d => d.Product).WithMany(p => p.InventoryTransactions)
-                .HasForeignKey(d => d.ProductId)
+            entity.HasOne(d => d.ShopProduct).WithMany(p => p.InventoryTransactions)
+                .HasForeignKey(d => d.ShopProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Produ__59FA5E80");
 
@@ -105,6 +111,33 @@ public partial class TrackerDbContext : DbContext
                 .HasForeignKey(d => d.TransactionType)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Trans__5AEE82B9");
+        });
+
+        modelBuilder.Entity<JournalEntry>(entity =>
+        {
+            entity.HasKey(e => e.JournalEntryTransId).HasName("PK_ReceiptNo");
+
+            entity.Property(e => e.ChequeNumber).HasMaxLength(50);
+            entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
+            entity.Property(e => e.DateModified).HasColumnType("datetime");
+            entity.Property(e => e.DrCr)
+                .HasMaxLength(10)
+                .IsFixedLength();
+            entity.Property(e => e.ModifiedBy).HasMaxLength(50);
+            entity.Property(e => e.PayMode).HasMaxLength(50);
+            entity.Property(e => e.ProcessDateTime).HasColumnType("datetime");
+            entity.Property(e => e.ProcessedStatus)
+                .HasMaxLength(10)
+                .IsFixedLength();
+            entity.Property(e => e.ReceiptNo).HasMaxLength(50);
+            entity.Property(e => e.Rev)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Revreq)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
         });
 
         modelBuilder.Entity<Order>(entity =>
@@ -165,21 +198,27 @@ public partial class TrackerDbContext : DbContext
             entity.Property(e => e.DeletedApprover).HasMaxLength(50);
             entity.Property(e => e.DeletedBy).HasMaxLength(50);
             entity.Property(e => e.Description).HasColumnType("text");
-            entity.Property(e => e.LastOrderDate).HasColumnType("datetime");
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProductName)
                 .HasMaxLength(255)
                 .IsUnicode(false);
+        });
 
-            entity.HasOne(d => d.Category).WithMany(p => p.Products)
-                .HasForeignKey(d => d.CategoryId)
-                .HasConstraintName("FK__Products__Catego__4D94879B");
+        modelBuilder.Entity<ReorderAlert>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("ID");
         });
 
         modelBuilder.Entity<Shop>(entity =>
         {
+            entity.Property(e => e.CreatedBy).HasMaxLength(50);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeletedApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(50);
+            entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.ShopManagerContact).HasMaxLength(50);
             entity.Property(e => e.ShopManagerName).HasMaxLength(50);
             entity.Property(e => e.ShopName).HasMaxLength(50);
@@ -187,7 +226,23 @@ public partial class TrackerDbContext : DbContext
 
         modelBuilder.Entity<ShopProduct>(entity =>
         {
-            entity.Property(e => e.ProductName).HasMaxLength(50);
+            entity.HasKey(e => e.ShopProductId).HasName("PK__ShopProducts__B40CC6ED4D9A0596");
+
+            entity.Property(e => e.ShopProductId).HasColumnName("ShopProductID");
+            entity.Property(e => e.CreatedBy).HasMaxLength(50);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DateDeleted).HasColumnType("datetime");
+            entity.Property(e => e.DeletedApprover).HasMaxLength(50);
+            entity.Property(e => e.DeletedBy).HasMaxLength(50);
+            entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.LastOrderDate).HasColumnType("datetime");
+            entity.Property(e => e.ModifiedBy).HasMaxLength(50);
+            entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+            entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ProductId).HasColumnName("ProductID");
+            entity.Property(e => e.ProductName)
+                .HasMaxLength(255)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<Supplier>(entity =>

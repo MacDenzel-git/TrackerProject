@@ -1,0 +1,378 @@
+﻿@page "/Dashboard"
+@inject IUtilService _service
+ 
+@using DataAccessLayer.Models
+ 
+@inject NavigationManager NavigationManager
+
+
+<div>
+    <div class="row">
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body" style="
+                        background-color: #112369;
+                        color: white;
+                        background: rgb(17,35,105);
+                        background: linear-gradient(90deg, rgba(17,35,105,1) 0%, rgba(17,35,105,1) 20%, rgba(30,148,96,1) 88%);
+                        ">
+
+                    <div class="card-body ">
+                        <div class="row">
+                            <div class="col-10"><p>Order Alert</p></div>
+                            <div class="col-2 rounded-start-pill" style="
+    background-color: white;
+    color: black;
+    font-size: 21px;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0 !important;
+">
+                                <p class="fs-3 text-dark m-0">7</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body" style="
+                        background-color: #1e9460;
+                            color: white;">
+
+                    <div class="card-body ">
+                        <div class="row">
+                            <div class="col-10"><p>Running</p></div>
+                            <div class="col-2 rounded-start-pill" style="
+    background-color: white;
+    color: black;
+    font-size: 21px;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0 !important;
+">
+                                <p class="fs-3 text-dark m-0">9</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body" style="
+                        background-color: #de5954;
+                            color: white;">
+
+                    <div class="card-body ">
+                        <div class="row">
+                            <div class="col-10"><p>Overdue</p></div>
+                            <div class="col-2 rounded-start-pill" style="
+    background-color: white;
+    color: black;
+    font-size: 21px;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0 !important;
+">
+                                <p class="fs-3 text-dark m-0">2</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr />
+
+
+@if (Width == 0)
+{
+    <div class="spinner"></div>
+}
+else
+{
+    @if (Width <= 1290)
+    {
+
+        <div class="row">
+            <div class="col-md-6">
+                <DoughnutChart @ref="doughnutChart" Width="400" />
+
+            </div>
+
+            <div class="col-md-6 chart">
+                <p>Project By Status</p>
+                <BarChart @ref="barChart" />
+
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-4 col-md-3">
+                <DoughnutChart @ref="doughnutChart" Width="400" />
+
+            </div>
+
+            <div class="col-8 col-md-5 chart">
+                <p>Project By Status</p>
+
+                <BarChart @ref="barChart" Width="953" Height="416" />
+
+            </div>
+        </div>
+    }
+}@*
+<div class="row">
+    <div class="col-12">
+
+@if (ProjectList.Count() == 0)
+{
+    <div class="spinner"></div>
+}
+else
+{
+
+    <br />
+    <table class="table table-striped align-middle table-bordered">
+        <thead class="table-success">
+            <tr>
+                <th>Title</th>
+                <th>Ticket</th>
+                <th>Status</th>
+                <td>Responsible</td>
+                <td>Closure Date</td>
+
+             </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ProjectList)
+            {
+                <tr>
+
+
+                    <td>@item.SapphireTicketNumber</td>
+                    <td class="text">@item.ProjectTitle</td>
+                    <td>@item.StatusDescription</td>
+                    <td>@item.ResponsiblePerson</td>
+                    <td>@item.TargetClosureDate</td>
+
+
+
+                </tr>
+            }
+        </tbody>
+
+            </table>
+        }
+    </div>
+</div> *@
+@*
+<div class="mt-5">
+    <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="async () => await RandomizeAsync()"> Randomize </Button>
+    <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="async () => await AddDatasetAsync()"> Add Dataset </Button>
+    <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="async () => await AddDataAsync()">Add Data</Button>
+</div>
+ *@
+@code {
+    private DoughnutChart doughnutChart = default!;
+    private DoughnutChartOptions doughnutChartOptions = default!;
+    private ChartData chartData = default!;
+    private string[]? backgroundColors;
+    private List<ProjectDTO> ProjectList = new List<ProjectDTO>();
+
+    private int datasetsCount = 0;
+    private int dataLabelsCount = 0;
+
+    private Random random = new();
+
+    private BarChart barChart = default!;
+    private BarChartOptions barChartOptions = default!;
+    private ChartData BarchartData = default!;
+    public int Height { get; set; }
+    public int Width { get; set; }
+    // protected override async void OnInitialized()
+    // {
+
+    //     //BAR CHART
+
+
+    // }
+    protected override async Task OnInitializedAsync()
+    {
+        bool loggedInUser = await _service.IsUserAuthenticated();
+        if (loggedInUser == false)
+        {
+            NavigationManager.NavigateTo("/Login");
+        }
+        var dimension = await _service.GetDimensions();
+        Height = dimension.Height;
+        Width = dimension.Width;
+
+    }
+    public async Task ConfigureBarchChart()
+    {
+        var data = await _projectService.ConfigureDashBoard();
+        ProductList = await httpHandler.GetList<DashboardDTO>("Product/GetAllCategories");
+
+        var labels = new List<string> { };
+        var dataset1 = new BarChartDataset()
+            {
+                Data = new List<double?> { },
+                BackgroundColor = new List<string> { ColorUtility.CategoricalTwelveColors[0] },
+                BorderColor = new List<string> { ColorUtility.CategoricalTwelveColors[0] },
+                BorderWidth = new List<double> { 0 },
+            };
+        foreach (var item in data.BarChart)
+        {
+            labels.Add(item.SectionName.ToString());
+            dataset1.Data.Add(item.NumberOfProjects);
+        }
+        var datasets = new List<IChartDataset>();
+
+
+        datasets.Add(dataset1);
+
+        BarchartData = new ChartData { Labels = labels, Datasets = datasets };
+
+        barChartOptions = new BarChartOptions();
+        barChartOptions.Responsive = true;
+        barChartOptions.Interaction = new Interaction { Mode = InteractionMode.Y };
+        barChartOptions.IndexAxis = "y";
+
+        barChartOptions.Scales.X!.Title = new ChartAxesTitle { Text = "Projects", Display = true };
+        barChartOptions.Scales.Y!.Title = new ChartAxesTitle { Text = "Statuses", Display = true };
+
+        barChartOptions.Plugins.Legend.Display = false;
+
+
+    }
+
+    public async Task ConfigurePieChart()
+    {
+        backgroundColors = ColorUtility.CategoricalTwelveColors;
+
+        var data = await _projectService.ConfigureDashBoard();
+        var datasets = new List<IChartDataset>();
+        var labels = new List<string> { };
+        var values = new List<double?>();
+        var DoughnutChartDataset = new DoughnutChartDataset();
+        ProjectList = data.Projects;
+
+
+        foreach (var item in data.PieChart)
+        {
+            labels.Add(item.SectionName.ToString());
+            datasetsCount += 1;
+            values.Add(item.NumberOfProjects);
+
+
+        }
+        dataLabelsCount = labels.Count();
+        DoughnutChartDataset = new DoughnutChartDataset
+            {
+                // Label l $"{item.SectionName}",
+                Label = "# Of Projects",
+                Data = values,
+                BackgroundColor = GetRandomBackgroundColors()
+            };
+        datasets.Add(DoughnutChartDataset);
+        backgroundColors = ColorUtility.CategoricalTwelveColors;
+        chartData = new ChartData { Labels = labels, Datasets = datasets };
+
+        doughnutChartOptions = new();
+        doughnutChartOptions.Responsive = true;
+        // doughnutChartOptions.Plugins.Title!.Text = "Projects";
+        // doughnutChartOptions.Plugins.Title.Display = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var dimension = await _service.GetDimensions();
+            Height = dimension.Height;
+            Width = dimension.Width;
+            await ConfigureBarchChart();
+            await ConfigurePieChart();
+
+
+            await doughnutChart.InitializeAsync(chartData, doughnutChartOptions);
+            await barChart.InitializeAsync(BarchartData, barChartOptions);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+
+
+
+
+    #region Data Preparation
+
+    private List<IChartDataset> GetDefaultDataSets(int numberOfDatasets)
+    {
+        var datasets = new List<IChartDataset>();
+
+        for (var index = 0; index < numberOfDatasets; index++)
+        {
+            datasets.Add(GetRandomDoughnutChartDataset());
+        }
+
+        return datasets;
+    }
+
+    private DoughnutChartDataset GetRandomDoughnutChartDataset()
+    {
+        datasetsCount += 1;
+        return new() { Label = $"Team {datasetsCount}", Data = GetRandomData(), BackgroundColor = GetRandomBackgroundColors() };
+    }
+
+    private List<double?> GetRandomData()
+    {
+        var data = new List<double?>();
+        for (var index = 0; index < dataLabelsCount; index++)
+        {
+            data.Add(random.Next(0, 100));
+        }
+
+        return data;
+    }
+
+    private List<string> GetRandomBackgroundColors()
+    {
+        var colors = new List<string>();
+        for (var index = 0; index < dataLabelsCount; index++)
+        {
+            colors.Add(backgroundColors![index]);
+        }
+
+        return colors;
+    }
+
+    private List<string> GetDefaultDataLabels(int numberOfLabels)
+    {
+        var labels = new List<string>();
+        for (var index = 0; index < numberOfLabels; index++)
+        {
+            labels.Add(GetNextDataLabel());
+            dataLabelsCount += 1;
+        }
+
+        return labels;
+    }
+
+    private string GetNextDataLabel() => $"Product {dataLabelsCount + 1}";
+
+    private string GetNextDataBackgrounfColor() => backgroundColors![dataLabelsCount];
+
+    #endregion  Data Preparation
+}
+

@@ -7,7 +7,7 @@ public partial class InventoryTransaction
 {
     public int TransactionId { get; set; }
 
-    public int ProductId { get; set; }
+    public int ShopProductId { get; set; }
 
     public DateTime TransactionDate { get; set; }
 
@@ -41,7 +41,13 @@ public partial class InventoryTransaction
 
     public DateTime ProductExpiryDate { get; set; }
 
-    public virtual Product Product { get; set; } = null!;
+    public string? ProductName { get; set; }
+
+    public int? QuantityBeforeReorder { get; set; }
+
+    public decimal? UnitPriceOfPreviousStock { get; set; }
+
+    public virtual Product ShopProduct { get; set; } = null!;
 
     public virtual TransactionType TransactionTypeNavigation { get; set; } = null!;
 }

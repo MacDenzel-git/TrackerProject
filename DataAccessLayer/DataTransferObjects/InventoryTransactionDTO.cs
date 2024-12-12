@@ -14,13 +14,13 @@ namespace DataAccessLayer.DataTransferObjects
 
         public DateTime? TransactionDate { get; set; }
 
-        public int? TransactionTypeId { get; set; }
-
+        public string TransactionType { get; set; } = null!;
         public int? Quantity { get; set; }
 
         public string ReceivingShop { get; set; } = null!;
 
         public string SendingShop { get; set; } = null!;
+        public string ProductName { get; set; } = null!;
 
         public DateTime ProductExpiryDate { get; set; }
 

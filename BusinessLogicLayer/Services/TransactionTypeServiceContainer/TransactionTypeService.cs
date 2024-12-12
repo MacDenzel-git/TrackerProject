@@ -93,11 +93,11 @@ namespace BusinessLogicLayer.Services.TransactionTypeServiceContainer
         }
 
 
-        public async Task<TransactionTypeDTO> GetTransactionType(int transactionTypeId)
-        {
-            var output = await _transactionType.GetSingleItem(x => x.TransactionTypeId == transactionTypeId);
-            return new AutoMapper<TransactionType, TransactionTypeDTO>().MapToObject(output);
-        }
+        //public async Task<TransactionTypeDTO> GetTransactionType(int transactionTypeId)
+        //{
+        //    var output = await _transactionType.GetSingleItem(x => x.TransactionTypeName == transactionTypeId);
+        //    return new AutoMapper<TransactionType, TransactionTypeDTO>().MapToObject(output);
+        //}
 
         public async Task<IEnumerable<TransactionTypeDTO>> GetAllTransactionTypes()
         {

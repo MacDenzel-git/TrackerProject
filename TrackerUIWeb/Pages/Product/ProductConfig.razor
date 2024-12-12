@@ -5,6 +5,7 @@
 @using DataAccessLayer.DataTransferObjects
 @using Microsoft.AspNetCore.Components;
 @using TrackerUIWeb.Data.ApiGateway
+@using TrackerUIWeb.Data.DataTransferObjects
 @using TrackerUIWeb.Utilities
  
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
@@ -50,18 +51,18 @@
                             <label for="exampleFormControlInput1">   Description</label>
                             <InputText class="form-control" @bind-Value="Product.Description"></InputText>
                         </div>
-                         <div class="form-group">
+                      @*    <div class="form-group">
                             <label for="exampleFormControlInput1">   Quantity In Stock</label>
                             <InputNumber class="form-control" @bind-Value="Product.QuantityInStock"></InputNumber>
-                        </div>
-                        <div class="form-group">
+                        </div> *@
+                       @*  <div class="form-group">
                             <label for="exampleFormControlInput1">Price</label>
                             <InputNumber class="form-control" @bind-Value="Product.Price"></InputNumber>
-                        </div> 
-                        <div class="form-group">
+                        </div>  *@
+                        @* <div class="form-group">
                             <label for="exampleFormControlInput1">  Reorder Level</label>
                             <InputNumber class="form-control" @bind-Value="Product.ReorderLevel"></InputNumber>
-                        </div>
+                        </div> *@
                         <div class="mb-3 col-md-3">
                             <label for="Name" class="form-label">Categories</label>
                             <select required for="CategoryId" class="form-control" @bind="@Product.CategoryId">
@@ -105,19 +106,125 @@
 
 
     <Button Color="ButtonColor.Primary" @onclick="Create">Create New</Button>
+
+    
 </div>
+
+
+
+
+
+
+<div>
+    <Modal @ref="ShopProductModal"
+           title=@Title>
+
+        <BodyTemplate>
+
+            @if (!string.IsNullOrEmpty(OutputHandler.Message))
+            {
+                if (OutputHandler.IsErrorOccured)
+                {
+                    <p class="text-danger">@OutputHandler.Message</p>
+                }
+                else
+                {
+                    <p class="text-success">@OutputHandler.Message</p>
+                }
+
+
+            }
+            <EditForm Model="@ShopProduct" OnValidSubmit="Save">
+
+                <div class="row">
+                    <form>
+                        <div class="mb-3 col-md-3">
+                            <label for="Name" class="form-label">Shops</label>
+                            <select required for="CategoryId" class="form-control" @bind="@ShopProduct.ShopId">
+                                @foreach (var item in ShopsList.OrderByDescending(x => x.ShopName))
+                                {
+                                    <option selected="@item.ShopId" value="@item.ShopId">
+                                        @item.ShopName
+                                    </option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => ShopProduct.ShopId)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">    Product Name</label>
+                            <InputText readonly="true" class="form-control" @bind-Value="ShopProduct.ProductName"></InputText>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">   Description</label>
+                            <InputText class="form-control" @bind-Value="ShopProduct.Description"></InputText>
+                        </div>
+                           <div class="form-group">
+                        <label for="exampleFormControlInput1">   Quantity In Stock</label>
+                        <InputNumber class="form-control" @bind-Value="ShopProduct.QuantityInStock"></InputNumber>
+                        </div>  
+                          <div class="form-group">
+                        <label for="exampleFormControlInput1">Price</label>
+                        <InputNumber class="form-control" @bind-Value="ShopProduct.Price"></InputNumber>
+                        </div> 
+                        <div class="form-group">
+                        <label for="exampleFormControlInput1">  Reorder Level</label>
+                            <InputNumber class="form-control" @bind-Value="ShopProduct.ReorderLevel"></InputNumber>
+                        </div>
+                      
+                    </form>
+                </div>
+            </EditForm>
+
+
+        </BodyTemplate>
+        <FooterTemplate>
+
+            @if (Action.ToLower() == "edit")
+            {
+                <Button Color="ButtonColor.Primary" @onclick="Save">Save changes</Button>
+            }
+            else if (Action.ToLower() == "delete")
+            {
+                <Button Color="ButtonColor.Primary" @onclick="RequestDelete ">Confirm Delete</Button>
+            }
+            else if (Action.ToLower() == "approve delete")
+            {
+                <Button Color="ButtonColor.Primary" @onclick="ApproveDelete">Approve Delete</Button>
+            }
+            else
+            {
+                <Button Color="ButtonColor.Danger" @onclick=ConfirmAddToShop>Add Product to shop </Button>
+            }
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        </FooterTemplate>
+
+    </Modal>
+
+
+    <Button Color="ButtonColor.Primary" @onclick="Create">Create New</Button>
+
+
+</div>
+
+
+
+
+
+
 
 @if (ProductList is null)
 {
-    
-}else{
-@if (ProductList.Count() == 0)
-{
-    <div class="spinner"></div>
+
 }
 else
 {
-    @* <h1>Uploads</h1>
+    @if (ProductList.Count() == 0)
+    {
+        <div class="spinner"></div>
+    }
+    else
+    {
+        @* <h1>Uploads</h1>
     <div class="row">
         <div class="col-md-6">
             <a href='/Upload/add' class="btn btn-primary" role="button">
@@ -127,58 +234,63 @@ else
         </div>
 
     </div> *@
-    <br />
-    <table class="table table-striped table-sm align-middle table-bordered" >
-        <thead class="table-success">
-            <tr>
-                <th>Product Name</th>
-                <th>Contact Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-         
-
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in ProductList)
-            {
+        <br />
+        <table class="table table-striped table-sm align-middle table-bordered">
+            <thead class="table-success">
                 <tr>
-
-
-                    <td>@item.ProductName</td>
-                    <td class="text">@item.Description</td>
-                    <td class="text">@item.QuantityInStock</td>
-                    <td class="text">@item.ReorderLevel</td>
-                    <td class="text">@item.Price</td>
-                   
-
-
-                    <td>
-                        @if (item.IsDeleted == true)
-                        {
-                            <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.ProductId)">Approve Delete</button>
-                        }
-                        else
-                        {
-                            <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.ProductId)">Delete</button>
-
-                        }
-                        <button class="btn btn-sm btn-danger" @onclick="()=>Edit(item.ProductId)">Edit</button>
-@*                         <button class="btn btn-danger" @onclick="()=>Delete(item.ProductId)">Delete</button>
- *@                    </td>
+                    <th> Name</th>
+                    <th>Description</th>
+                  @*   <th>In Stock</th>
+                    <th>Reorder Level</th>
+                    <th>Price</th> *@
+                    <th>Action</th>
                 </tr>
-            }
-        </tbody>
+            </thead>
+            <tbody>
+                @foreach (var item in ProductList)
+                {
+                    <tr>
 
-    </table>
 
+                        <td>@item.ProductName</td>
+                        <td class="text">@item.Description</td>
+                        @* <td class="text">@item.QuantityInStock</td>
+                        <td class="text">@item.ReorderLevel</td>
+                        <td class="text">@item.Price</td> *@
+
+
+
+                        <td>
+                            @if (item.IsDeleted == true)
+                            {
+                                <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.ProductId)">Approve Delete</button>
+                            }
+                            else
+                            {
+                                <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.ProductId)">Delete</button>
+
+                            }
+                            <button class="btn btn-sm btn-danger" @onclick="()=>Edit(item.ProductId)">Edit</button> 
+                            <button class="btn btn-sm btn-danger" @onclick="()=>AddToShop(item.ProductId)">Add to Shop</button>
+                            @*                         <button class="btn btn-danger" @onclick="()=>Delete(item.ProductId)">Delete</button>
+                *@
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    }
 }
-}
+
+ 
 @code {
     private ProductDTO Product { get; set; } = new ProductDTO();
-    private IEnumerable<ProductDTO> ProductList = new List<ProductDTO> {  };
+    private ShopProductDTO ShopProduct { get; set; } = new ShopProductDTO();
+    private IEnumerable<ProductDTO> ProductList = new List<ProductDTO> {};
+    private IEnumerable<ShopProductDTO> ShopProductList = new List<ShopProductDTO> {};
+    private IEnumerable<ShopDTO> ShopsList = new List<ShopDTO> {};
     private string Action = "";
     private IEnumerable<CategoryDTO> CategoryList = new List<CategoryDTO>();
 
@@ -204,6 +316,7 @@ else
 
         if (!string.IsNullOrEmpty(Role))
         {
+            ShopProductList = await httpHandler.GetList<ShopProductDTO>("ShopProduct/GetAllProductsB");
             ProductList = await httpHandler.GetList<ProductDTO>("Product/GetAllProducts");
             CategoryList = await httpHandler.GetList<CategoryDTO>("Category/GetAllCategories");
 
@@ -211,7 +324,7 @@ else
             {
                 if (ProductList is null)
                 {
-                    
+
                 }else
                 {
                     ProductList = ProductList.Where(x => x.DeletedBy != Username);
@@ -256,9 +369,6 @@ else
         else
         {
 
-
-
-
             if (Product.ProductId != 0)
             {
                 return new OutputHandler { IsErrorOccured = true, Message = "Something went Wrong" };
@@ -287,20 +397,79 @@ else
 
 
 
+    protected async Task<OutputHandler> ConfirmAddToShop()
+    {
+
+        ShopProduct.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        ShopProduct.LoggedInUsername = await sessionStorage.GetItemAsync<string>("Role");
+
+        if (Action == "edit")
+        {
+            OutputHandler = await httpHandler.Create<ShopProductDTO>("ShopProduct/Create", ShopProduct);
+
+            if (OutputHandler.IsErrorOccured == false)
+            {
+                NavigationManager.NavigateTo("/ShopProduct/ShopProductConfiguration", true);
+                OnHideModalClick();
+            }
+            else
+            {
+                OnProccessCompleteNotify();
+            }
+        }
+        else
+        {
+
+            if (ShopProduct.ShopProductID != 0)
+            {
+                return new OutputHandler { IsErrorOccured = true, Message = "Something went Wrong" };
+            }
+
+            OutputHandler = await httpHandler.Create<ShopProductDTO>("ShopProduct/Create", ShopProduct);
+            if (OutputHandler.IsErrorOccured == false)
+            {
+
+
+                OnProccessCompleteNotify();
+                OnHideModalClick();
+                NavigationManager.NavigateTo("/ShopProduct/ProductConfiguration", true);
+            }
+            else
+            {
+                OnProccessCompleteNotify();
+
+            }
+        }
+
+        return OutputHandler;
+
+
+    }
+
     public void Cancel()
     {
         IsCancelRequest = true;
         NavigationManager.NavigateTo("/Product/AllUploads");
     }
-    public async void Edit(int projectId)
+    public async void Edit(int product)
     {
         Action = "edit";
         Title = "Edit Product ";
-        Product = await httpHandler.Get<ProductDTO>($"Product/GetProduct?ProductId={projectId}");
+        Product = await httpHandler.Get<ProductDTO>($"Product/GetProduct?ProductId={product}");
         IsCancelRequest = true;
         OnShowModalClick();
     }
 
+    public async void AddToShop(int product)
+    {
+        Action = "ATS";
+        Title = "Add Product To shop";
+        ShopProduct.ProductID = product;
+        ShopProduct.ProductName = ProductList.Where(x => x.ProductId == product).FirstOrDefault().ProductName;
+        ShopsList = await httpHandler.GetList<ShopDTO>("Shop/GetAllShops");
+        IsCancelRequest = true;
+        OnShowShopModalClick();
+    }
 
     public async void Create()
     {
@@ -310,13 +479,13 @@ else
         IsCancelRequest = true;
         OnShowModalClick();
     }
-    public async void Delete(int projectId)
+    public async void Delete(int product)
     {
         IsCancelRequest = true;
         Title = "Delete Product";
         Action = "delete";
 
-        Product = await httpHandler.Get<ProductDTO>($"Product/GetProduct?ProductId={projectId}");
+        Product = await httpHandler.Get<ProductDTO>($"Product/GetProduct?ProductId={product}");
         if (Product.IsDeleted == true)
         {
             Action = "Approve Delete";
@@ -390,10 +559,10 @@ else
     }
 
 
-    public void PullActions(int projectId)
+    public void PullActions(int product)
     {
         IsCancelRequest = true;
-        NavigationManager.NavigateTo($"/Product/Tracker/{projectId}");
+        NavigationManager.NavigateTo($"/Product/Tracker/{product}");
     }
 
 
@@ -403,6 +572,7 @@ else
 
 
     private Modal modal = default!;
+    private Modal ShopProductModal = default!;
 
     [Inject] ToastService ToastService { get; set; } = default!;
 
@@ -410,6 +580,18 @@ else
     {
         await modal.ShowAsync();
     }
+    
+    private async Task OnShowShopModalClick()
+    {
+        await ShopProductModal.ShowAsync();
+    }
+
+
+    private async Task OnHideShopModalClick()
+    {
+        await ShopProductModal.HideAsync();
+    }
+
 
     private async Task OnHideModalClick()
     {

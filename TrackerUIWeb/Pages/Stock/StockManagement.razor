@@ -1,0 +1,644 @@
+﻿@page "/Stock/StockManagement"
+
+
+@using AllinOne.DataHandlers
+@using DataAccessLayer.DataTransferObjects
+@using Microsoft.AspNetCore.Components;
+@using TrackerUIWeb.Data.ApiGateway
+@using TrackerUIWeb.Data.DataTransferObjects
+@using TrackerUIWeb.Utilities
+
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
+@inject NavigationManager NavigationManager
+ @inject HttpHandlerService httpHandler
+
+@inject IUtilService _UtilService;
+
+<div>
+    <div class="row">
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body" style="
+                        background-color: #112369;
+                        color: white;
+                        background: rgb(17,35,105);
+                        background: linear-gradient(90deg, rgba(17,35,105,1) 0%, rgba(17,35,105,1) 20%, rgba(30,148,96,1) 88%);
+                        ">
+
+                    <div class="card-body ">
+                        <div class="row">
+                            <div class="col-10"><p>Order Alert</p></div>
+                            <div class="col-2 rounded-start-pill" style="
+    background-color: white;
+    color: black;
+    font-size: 21px;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0 !important;
+">
+                                <p class="fs-3 text-dark m-0">7</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body" style="
+                        background-color: #1e9460;
+                            color: white;">
+
+                    <div class="card-body ">
+                        <div class="row">
+                            <div class="col-10"><p>Expiring</p></div>
+                            <div class="col-2 rounded-start-pill" style="
+    background-color: white;
+    color: black;
+    font-size: 21px;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0 !important;
+">
+                                <p class="fs-3 text-dark m-0">9</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body" style="
+                        background-color: #de5954;
+                            color: white;">
+
+                    <div class="card-body ">
+                        <div class="row">
+                            <div class="col-10"><p>Expired</p></div>
+                            <div class="col-2 rounded-start-pill" style="
+    background-color: white;
+    color: black;
+    font-size: 21px;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0 !important;
+">
+                                <p class="fs-3 text-dark m-0">2</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr />
+<hr />
+
+@if (ProductList is null)
+{
+    
+}else
+{
+@if (ProductList.Count() == 0)
+{
+    <div class="spinner"></div>
+}
+else
+{
+    @* <h1>Uploads</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <a href='/Upload/add' class="btn btn-primary" role="button">
+                <i class="fas fa-upload-plus"></i>
+                Add Upload
+            </a>
+        </div>
+
+    </div> *@
+    <br />
+    <table class="table table-striped table-sm align-middle table-bordered" >
+        <thead class="table-success">
+            <tr>
+                <th>Product Name</th>
+                <th>Contact Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+         
+
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ProductList)
+            {
+                <tr>
+
+
+                    <td>@item.ProductName</td>
+                    <td class="text">@item.Description</td>
+                    <td class="text">@item.QuantityInStock</td>
+                    <td class="text">@item.ReorderLevel</td>
+                    <td class="text">@item.Price</td>
+                   
+
+
+                    <td>
+                        @if (item.IsDeleted == true)
+                        {
+                            <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.ShopProductID)">Approve Delete</button>
+                        }
+                        else
+                        {
+                            <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.ShopProductID)">Delete</button>
+
+                        }
+                        <button class="btn btn-sm btn-danger" @onclick="()=>Edit(item.ShopProductID)">Edit</button>
+@*                         <button class="btn btn-danger" @onclick="()=>Delete(item.ProductId)">Delete</button>
+ *@                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+}
+}
+
+<div>
+    <Modal @ref="modal"
+           title=@Title>
+
+        <BodyTemplate>
+
+            @if (!string.IsNullOrEmpty(OutputHandler.Message))
+            {
+                if (OutputHandler.IsErrorOccured)
+                {
+                    <p class="text-danger">@OutputHandler.Message</p>
+                }
+                else
+                {
+                    <p class="text-success">@OutputHandler.Message</p>
+                }
+
+
+            }
+            <EditForm Model="@InventoryTransaction" OnValidSubmit="Save">
+
+                <div class="row">
+                    <form>
+                        <div class="mb-3 col-md-3">
+                            <label for="Name" class="form-label">Products</label>
+                            <select required for="ProductId" class="form-control" @bind="@InventoryTransaction.ShopProductID">
+                                @foreach (var item in ProductList.OrderByDescending(x => x.ProductName))
+                                {
+                                    <option selected="@item.ShopProductID" value="@item.ShopProductID">
+                                        @item.ProductName
+                                    </option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => InventoryTransaction.ShopProductID)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">   Notes</label>
+                            <InputText class="form-control" @bind-Value="InventoryTransaction.Notes"></InputText>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">   Quantity</label>
+                            <InputNumber class="form-control" @bind-Value="InventoryTransaction.Quantity"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">Price</label>
+                            <InputDate class="form-control" @bind-Value="InventoryTransaction.ProductExpiryDate"></InputDate>
+                        </div>
+
+
+                    </form>
+                </div>
+            </EditForm>
+
+
+        </BodyTemplate>
+        <FooterTemplate>
+
+            @if (Action.ToLower() == "edit")
+            {
+                <Button Color="ButtonColor.Primary" @onclick="Save">Save changes</Button>
+            }
+            else if (Action.ToLower() == "delete")
+            {
+                <Button Color="ButtonColor.Primary" @onclick="RequestDelete ">Confirm Delete</Button>
+            }
+            else if (Action.ToLower() == "approve delete")
+            {
+                <Button Color="ButtonColor.Primary" @onclick="ApproveDelete">Approve Delete</Button>
+            }
+            else
+            {
+                <Button Color="ButtonColor.Danger" @onclick=Save>Create Order</Button>
+            }
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        </FooterTemplate>
+
+    </Modal>
+
+
+    <Button Color="ButtonColor.Primary" @onclick="Create">Add Stock</Button>  
+    <Button Color="ButtonColor.Primary" @onclick="Create">Transfer Stock</Button>
+ </div>
+
+@if (InventoryTransactionList is null)
+{
+
+}
+else
+{
+    @if (InventoryTransactionList.Count() == 0)
+    {
+        <div class="spinner"></div>
+    }
+    else
+    {
+        @* <h1>Uploads</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <a href='/Upload/add' class="btn btn-primary" role="button">
+                <i class="fas fa-upload-plus"></i>
+                Add Upload
+            </a>
+        </div>
+
+    </div> *@
+        <br />
+        <table class="table table-striped table-sm align-middle table-bordered">
+            <thead class="table-success">
+                <tr>
+                       <th> Name</th>
+                <th>Description</th>
+                <th>In Stock</th>
+                <th>Reorder Level</th>
+                <th>Price</th>
+                <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in InventoryTransactionList)
+                {
+                    <tr>
+
+                        <td>@item.TransactionType</td>
+                        <td class="text">@item.ProductName</td>
+                        <td class="text">@item.Quantity</td>
+                        <td class="text">@item.ReceivingShop</td>
+                        <td class="text">@item.SendingShop</td>
+                        <td class="text">@item.ProductExpiryDate</td>
+
+                        <td>
+                            @if (item.IsDeleted == true)
+                            {
+                                <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.TransactionId)">Approve Delete</button>
+                            }
+                            else
+                            {
+                                <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.TransactionId)">Delete</button>
+
+                            }
+                            <button class="btn btn-sm btn-danger" @onclick="()=>Edit(item.TransactionId)">Edit</button>
+                            @*                         <button class="btn btn-danger" @onclick="()=>Delete(item.InventoryTransactionId)">Delete</button>
+                *@
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    }
+}
+@code {
+    private InventoryTransactionDTO InventoryTransaction { get; set; } = new InventoryTransactionDTO();
+    private IEnumerable<InventoryTransactionDTO> InventoryTransactionList = new List<InventoryTransactionDTO> { };
+    private string Action = "";
+    private IEnumerable<ShopProductDTO> ProductList = new List<ShopProductDTO>();
+
+    private int InventoryTransactionId { get; set; }
+    protected string Title = "";
+    // protected string Title = "Configure InventoryTransaction";
+    private bool IsCancelRequest;
+    protected OutputHandler OutputHandler = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        // bool loggedInUser = await _UtilService.IsUserAuthenticated();
+        //         if (loggedInUser == false)
+        //         {
+
+        //             NavigationManager.NavigateTo("/Login");
+        //         }
+
+        string Role = await sessionStorage.GetItemAsync<string>("Role");
+        string Username = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+
+        if (!string.IsNullOrEmpty(Role))
+        {
+            InventoryTransactionList = await httpHandler.GetList<InventoryTransactionDTO>("InventoryTransaction/GetAllInventoryTransactions");
+            ProductList = await httpHandler.GetList<ShopProductDTO>("Product/GetAllProducts");
+
+            if (Role.ToLower().Equals("supervisor") || Role.ToLower().Equals("admin"))
+            {
+                if (InventoryTransactionList is null)
+                {
+
+                }
+                else
+                {
+                    InventoryTransactionList = InventoryTransactionList.Where(x => x.DeletedBy != Username);
+
+                }
+            }
+            else
+            {
+                InventoryTransactionList = InventoryTransactionList.Where(x => x.IsDeleted == false);
+            }
+
+        }
+        if (true)
+        {
+
+        }
+    }
+
+
+
+
+    protected async Task<OutputHandler> Save()
+    {
+
+        InventoryTransaction.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        InventoryTransaction.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+
+        if (Action == "edit")
+        {
+            OutputHandler = await httpHandler.Update<InventoryTransactionDTO>("InventoryTransaction/Update", InventoryTransaction);
+
+            if (OutputHandler.IsErrorOccured == false)
+            {
+                NavigationManager.NavigateTo("/InventoryTransaction/InventoryTransactionManagement", true);
+                OnHideModalClick();
+            }
+            else
+            {
+                OnProccessCompleteNotify();
+            }
+        }
+        else
+        {
+
+
+
+
+            if (InventoryTransaction.TransactionId != 0)
+            {
+                return new OutputHandler { IsErrorOccured = true, Message = "Something went Wrong" };
+            }
+
+            OutputHandler = await httpHandler.Create<InventoryTransactionDTO>("InventoryTransaction/Create", InventoryTransaction);
+            if (OutputHandler.IsErrorOccured == false)
+            {
+
+
+                OnProccessCompleteNotify();
+                OnHideModalClick();
+                NavigationManager.NavigateTo("/InventoryTransaction/InventoryTransactionManagement", true);
+            }
+            else
+            {
+                OnProccessCompleteNotify();
+
+            }
+        }
+
+        return OutputHandler;
+
+
+    }
+
+
+
+    public void Cancel()
+    {
+        IsCancelRequest = true;
+        NavigationManager.NavigateTo("/InventoryTransaction/AllUploads");
+    }
+    public async void Edit(int projectId)
+    {
+        Action = "edit";
+        Title = "Edit Stock ";
+        InventoryTransaction = await httpHandler.Get<InventoryTransactionDTO>($"InventoryTransaction/GetInventoryTransaction?InventoryTransactionId={projectId}");
+        IsCancelRequest = true;
+        OnShowModalClick();
+    }
+
+
+    public async void Create()
+    {
+        Action = "Create";
+        Title = "Add Stock";
+        InventoryTransaction = new InventoryTransactionDTO { };
+        InventoryTransaction.TransactionType = "Inbound";
+        IsCancelRequest = true;
+        OnShowModalClick();
+    }
+    
+    public async void Transfer()
+    {
+        Action = "Create";
+        Title = "Add Stock";
+        InventoryTransaction = new InventoryTransactionDTO { };
+        InventoryTransaction.TransactionType = "Transfer";
+        IsCancelRequest = true;
+        OnShowModalClick();
+    }
+    public async void Delete(int projectId)
+    {
+        IsCancelRequest = true;
+        Title = "Reverse Stock Entry";
+        Action = "delete";
+
+        InventoryTransaction = await httpHandler.Get<InventoryTransactionDTO>($"InventoryTransaction/GetInventoryTransaction?InventoryTransactionId={projectId}");
+        if (InventoryTransaction.IsDeleted == true)
+        {
+            Action = "Approve Delete";
+        }
+        OnShowModalClick();
+    }
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (!firstRender)
+    //     {
+
+    //         bool loggedInUser =  _Utilservice.IsUserAuthenticated();
+    //         if (loggedInUser == false)
+    //         {
+    //             NavigationManager.NavigateTo("/");
+    //         }else
+    //         {
+    //             NavigationManager.NavigateTo("/Login");
+    //         }
+    //     }
+
+    //  }
+    protected async Task RequestDelete()
+    {
+        InventoryTransaction.IsDeleted = true;
+        InventoryTransaction.DeletedBy = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        InventoryTransaction.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        InventoryTransaction.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+        //InventoryTransaction.
+        // InventoryTransaction.DeletedBy = await sessionStorage.GetItemAsync<string>("MachineName");
+        OutputHandler = await httpHandler.Delete<InventoryTransactionDTO>("InventoryTransaction/DeleteRequest", InventoryTransaction);
+        if (OutputHandler.IsErrorOccured == false)
+        {
+            NavigationManager.NavigateTo("/InventoryTransaction/InventoryTransactionManagement", true);
+
+
+            StateHasChanged();
+            OnProccessCompleteNotify();
+            OnHideModalClick();
+        }
+        else
+        {
+            OnProccessCompleteNotify();
+
+        }
+    }
+
+
+    protected async Task ApproveDelete()
+    {
+        InventoryTransaction.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        InventoryTransaction.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+        InventoryTransaction.DeleteApprover = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        InventoryTransaction.DateDeleted = DateTime.Now;
+        // InventoryTransaction.DeletedBy = await sessionStorage.GetItemAsync<string>("MachineName");
+        OutputHandler = await httpHandler.Delete<InventoryTransactionDTO>("InventoryTransaction/DeleteApproval", InventoryTransaction);
+        if (OutputHandler.IsErrorOccured == false)
+        {
+            NavigationManager.NavigateTo("/InventoryTransaction/InventoryTransactionManagement", true);
+
+
+            StateHasChanged();
+            OnProccessCompleteNotify();
+            OnHideModalClick();
+        }
+        else
+        {
+            OnProccessCompleteNotify();
+
+        }
+    }
+
+
+    public void PullActions(int projectId)
+    {
+        IsCancelRequest = true;
+        NavigationManager.NavigateTo($"/InventoryTransaction/Tracker/{projectId}");
+    }
+
+
+
+
+
+
+
+    private Modal modal = default!;
+
+    [Inject] ToastService ToastService { get; set; } = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+    private void OnModalShowing()
+    {
+        ToastService.Notify(new(ToastType.Primary, $"Event: Showing called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalShown()
+    {
+        ToastService.Notify(new(ToastType.Success, $"Event: Show called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHiding()
+    {
+        ToastService.Notify(new(ToastType.Danger, $"Event: Hiding called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHidden()
+    {
+        ToastService.Notify(new(ToastType.Warning, $"Event: Hide called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHidePrevented()
+    {
+        ToastService.Notify(new(ToastType.Info, $"Event: Hide Prevented called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnProccessCompleteNotify()
+    {
+        ToastService.Notify(new(ToastType.Info, $"{OutputHandler.Message}"));
+    }
+
+
+
+}
+
+
+
+
+
+@* <form>
+    <div class="form-group">
+        <label for="exampleFormControlInput1">Email address</label>
+        <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlSelect1">Example select</label>
+        <select class="form-control" id="exampleFormControlSelect1">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlSelect2">Example multiple select</label>
+        <select multiple class="form-control" id="exampleFormControlSelect2">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="exampleFormControlTextarea1">Example textarea</label>
+        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+    </div>
+</form> *@
