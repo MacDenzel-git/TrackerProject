@@ -14,7 +14,7 @@ namespace BusinessLogicLayer.Services.ShopProductServiceContainer
         Task<OutputHandler> Update(ShopProductDTO productDTO);
         Task<OutputHandler> DeleteApprove(ShopProductDTO productDTO);
         Task<OutputHandler> DeleteRequest(ShopProductDTO productDTO);
-        Task<IEnumerable<ShopProductDTO>> GetAllShopProducts();
+        Task<IEnumerable<ShopProductDTO>> GetAllShopProducts(int shopId);
         Task<ShopProductDTO> GetShopProduct(int productId);
         Task<ShopProductDTO> GetShopProductByBranch(int productId, string shop);
         Task<ShopProductDTO> GetShopProductByBranch(int productId, int shopId);

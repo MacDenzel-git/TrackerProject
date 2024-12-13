@@ -85,6 +85,7 @@ public partial class TrackerDbContext : DbContext
             entity.HasKey(e => e.TransactionId).HasName("PK__Inventor__55433A4B7619278F");
 
             entity.Property(e => e.TransactionId).HasColumnName("TransactionID");
+            entity.Property(e => e.BarCode).HasMaxLength(200);
             entity.Property(e => e.CreatedBy).HasMaxLength(50);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.DateDeleted).HasColumnType("datetime");
@@ -93,9 +94,11 @@ public partial class TrackerDbContext : DbContext
             entity.Property(e => e.ModifiedBy).HasMaxLength(50);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Notes).IsUnicode(false);
+            entity.Property(e => e.OrderPrice).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProductExpiryDate).HasColumnType("datetime");
             entity.Property(e => e.ProductName).HasMaxLength(50);
             entity.Property(e => e.ReceivingShop).HasMaxLength(50);
+            entity.Property(e => e.RetailPrice).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.SendingShop).HasMaxLength(50);
             entity.Property(e => e.ShopProductId).HasColumnName("ShopProductID");
             entity.Property(e => e.TransactionDate).HasColumnType("datetime");
@@ -106,17 +109,13 @@ public partial class TrackerDbContext : DbContext
                 .HasForeignKey(d => d.ShopProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Produ__59FA5E80");
-
-            entity.HasOne(d => d.TransactionTypeNavigation).WithMany(p => p.InventoryTransactions)
-                .HasForeignKey(d => d.TransactionType)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Inventory__Trans__5AEE82B9");
         });
 
         modelBuilder.Entity<JournalEntry>(entity =>
         {
             entity.HasKey(e => e.JournalEntryTransId).HasName("PK_ReceiptNo");
 
+            entity.Property(e => e.Barcode).HasMaxLength(200);
             entity.Property(e => e.ChequeNumber).HasMaxLength(50);
             entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
             entity.Property(e => e.DateModified).HasColumnType("datetime");

@@ -34,4 +34,6 @@ public partial class JournalEntry
     public string? ModifiedBy { get; set; }
 
     public DateTime? DateModified { get; set; }
+
+    public string? Barcode { get; set; }
 }

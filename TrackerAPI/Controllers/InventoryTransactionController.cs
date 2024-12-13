@@ -30,6 +30,22 @@ namespace TrackerAPI.Controllers
             return Ok(outputHandler);
         }
 
+
+        /// <summary>
+        /// This is the API for creating client Type
+        /// </summary>
+        /// <param name="transferDTO"></param>
+        /// <returns></returns>
+        [HttpPost("Transfer")]
+        public async Task<IActionResult> Transfer(InventoryTransferDTO transferDTO)
+        {
+            var outputHandler = await _service.Transfer(transferDTO);
+            if (outputHandler.IsErrorOccured)
+            {
+                return BadRequest(outputHandler);
+            }
+            return Ok(outputHandler);
+        }
         /// <summary>
         /// This is the API for updating client Type
         /// </summary>

@@ -17,12 +17,12 @@ namespace DataAccessLayer.DataTransferObjects
 
         public int? ShopId { get; set; }
 
-        public int? QuantityInStock { get; set; }
+        public int QuantityInStock { get; set; }
 
         public int? ReorderLevel { get; set; }
         public int ProductId { get; set; }
 
-        public decimal? Price { get; set; }
+        public decimal Price { get; set; }
 
         public string? CreatedBy { get; set; }
         public DateTime? LastOrderDate { get; set; }

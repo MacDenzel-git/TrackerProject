@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DataAccessLayer.DataTransferObjects;
 
-namespace DataAccessLayer.DataTransferObjects
+namespace TrackerUIWeb.Data.DataTransferObjects
 {
     public class InventoryTransferDTO : UserInformationDTO
     {
+        
         public int QuantityInStock { get; set; }
         public int QuantityToTransfer { get; set; }
         public int ShopProductId { get; set; }
         public int ProductID { get; set; }
-        public string BarCode { get; set; } = null!;
-
-        public int Sold { get; set; }
-
         public DateTime ProductExpiryDate { get; set; }
         public string ReasonForTransfer { get; set; }
         public string SendingShop { get; set; }

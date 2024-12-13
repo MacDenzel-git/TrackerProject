@@ -29,7 +29,5 @@ public partial class Product
 
     public DateTime? DateDeleted { get; set; }
 
-    public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
-
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 }

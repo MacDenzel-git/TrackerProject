@@ -15,13 +15,13 @@ public partial class InventoryTransaction
 
     public int Quantity { get; set; }
 
-    public string Notes { get; set; } = null!;
+    public string? Notes { get; set; }
 
     public string CreatedBy { get; set; } = null!;
 
     public DateTime CreatedDate { get; set; }
 
-    public string ModifiedBy { get; set; } = null!;
+    public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
 
@@ -41,13 +41,19 @@ public partial class InventoryTransaction
 
     public DateTime ProductExpiryDate { get; set; }
 
-    public string? ProductName { get; set; }
+    public string ProductName { get; set; } = null!;
 
-    public int? QuantityBeforeReorder { get; set; }
+    public int QuantityBeforeReorder { get; set; }
 
-    public decimal? UnitPriceOfPreviousStock { get; set; }
+    public decimal UnitPriceOfPreviousStock { get; set; }
 
-    public virtual Product ShopProduct { get; set; } = null!;
+    public decimal OrderPrice { get; set; }
 
-    public virtual TransactionType TransactionTypeNavigation { get; set; } = null!;
+    public decimal RetailPrice { get; set; }
+
+    public string BarCode { get; set; } = null!;
+
+    public int Sold { get; set; }
+
+    public virtual ShopProduct ShopProduct { get; set; } = null!;
 }

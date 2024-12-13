@@ -9,13 +9,13 @@ public partial class ShopProduct
 
     public string ProductName { get; set; } = null!;
 
-    public string? Description { get; set; }
+    public string Description { get; set; } = null!;
 
-    public int? QuantityInStock { get; set; }
+    public int QuantityInStock { get; set; }
 
-    public int? ReorderLevel { get; set; }
+    public int ReorderLevel { get; set; }
 
-    public decimal? Price { get; set; }
+    public decimal Price { get; set; }
 
     public int? ShopId { get; set; }
 
@@ -40,4 +40,6 @@ public partial class ShopProduct
     public string? DeletedApprover { get; set; }
 
     public DateTime? DateDeleted { get; set; }
+
+    public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
 }

@@ -57,9 +57,9 @@ namespace TrackerAPI.Controllers
         /// 
 
         [HttpGet("GetAllShopProducts")]
-        public async Task<IActionResult> GetAllShopProducts()
+        public async Task<IActionResult> GetAllShopProducts(int shopId)
         {
-            var output = await _service.GetAllShopProducts();
+            var output = await _service.GetAllShopProducts(shopId);
             if (output != null)
             {
                 return Ok(output);

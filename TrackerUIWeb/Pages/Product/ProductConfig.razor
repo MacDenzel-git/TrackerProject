@@ -105,7 +105,7 @@
     </Modal>
 
 
-    <Button Color="ButtonColor.Primary" @onclick="Create">Create New</Button>
+    <Button Color="ButtonColor.Primary" @onclick="Create">Create Product</Button>
 
     
 </div>
@@ -141,9 +141,12 @@
                         <div class="mb-3 col-md-3">
                             <label for="Name" class="form-label">Shops</label>
                             <select required for="CategoryId" class="form-control" @bind="@ShopProduct.ShopId">
+                                <option >
+                                    Select Shop
+                                </option>
                                 @foreach (var item in ShopsList.OrderByDescending(x => x.ShopName))
                                 {
-                                    <option selected="@item.ShopId" value="@item.ShopId">
+                                    <option  value="@item.ShopId">
                                         @item.ShopName
                                     </option>
                                 }
@@ -195,13 +198,13 @@
             {
                 <Button Color="ButtonColor.Danger" @onclick=ConfirmAddToShop>Add Product to shop </Button>
             }
-            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideShopProductModalClick">Close</Button>
         </FooterTemplate>
 
     </Modal>
 
 
-    <Button Color="ButtonColor.Primary" @onclick="Create">Create New</Button>
+     
 
 
 </div>
@@ -220,7 +223,7 @@ else
 {
     @if (ProductList.Count() == 0)
     {
-        <div class="spinner"></div>
+        <Spinner Type="SpinnerType.Border" Size="SpinnerSize.Small" />
     }
     else
     {
@@ -316,7 +319,7 @@ else
 
         if (!string.IsNullOrEmpty(Role))
         {
-            ShopProductList = await httpHandler.GetList<ShopProductDTO>("ShopProduct/GetAllProductsB");
+            ShopProductList = await httpHandler.GetList<ShopProductDTO>("ShopProduct/GetAllProducts");
             ProductList = await httpHandler.GetList<ProductDTO>("Product/GetAllProducts");
             CategoryList = await httpHandler.GetList<CategoryDTO>("Category/GetAllCategories");
 
@@ -402,9 +405,17 @@ else
 
         ShopProduct.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("LoggedInUser");
         ShopProduct.LoggedInUsername = await sessionStorage.GetItemAsync<string>("Role");
-
+        if (ShopProduct.ShopId is null)
+        {
+           return OutputHandler = new OutputHandler
+                {
+                    IsErrorOccured = true,
+                    Message = "Choose Shop"
+                };
+        }
         if (Action == "edit")
         {
+
             OutputHandler = await httpHandler.Create<ShopProductDTO>("ShopProduct/Create", ShopProduct);
 
             if (OutputHandler.IsErrorOccured == false)
@@ -432,7 +443,7 @@ else
 
                 OnProccessCompleteNotify();
                 OnHideModalClick();
-                NavigationManager.NavigateTo("/ShopProduct/ProductConfiguration", true);
+                NavigationManager.NavigateTo("/Product/ProductConfiguration", true);
             }
             else
             {
@@ -596,6 +607,15 @@ else
     private async Task OnHideModalClick()
     {
         await modal.HideAsync();
+        NavigationManager.NavigateTo("/Product/ProductConfiguration", true);
+
+    }
+
+    private async Task OnHideShopProductModalClick()
+    {
+        await ShopProductModal.HideAsync();
+        NavigationManager.NavigateTo("/Product/ProductConfiguration", true);
+
     }
 
     private void OnModalShowing()

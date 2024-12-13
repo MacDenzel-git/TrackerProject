@@ -24,6 +24,4 @@ public partial class TransactionType
     public string? DeletedApprover { get; set; }
 
     public DateTime? DateDeleted { get; set; }
-
-    public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
 }

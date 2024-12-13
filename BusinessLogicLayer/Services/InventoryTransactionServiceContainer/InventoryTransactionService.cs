@@ -12,6 +12,8 @@ using BusinessLogicLayer.Services.InventoryTransactionsServiceContainer;
 using BusinessLogicLayer.Services.OrderServiceContainer;
 using BusinessLogicLayer.Services.ProductsServiceContainer;
 using BusinessLogicLayer.Services.ShopProductServiceContainer;
+using DataAccessLayer.UnitOfWorkContainer;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
 {
@@ -20,6 +22,7 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
     {
         private readonly GenericRepository<InventoryTransaction> _inventoryTransaction;
         private readonly IShopProductService _productService;
+        private UnityOfWork _unitOfWork = new UnityOfWork();
 
         public InventoryTransactionService(GenericRepository<InventoryTransaction> inventoryTransaction, IShopProductService productService)
         {
@@ -33,21 +36,43 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                 var mapped = new AutoMapper<InventoryTransactionDTO, InventoryTransaction>().MapToObject(inventoryTransactionDTO);
                 mapped.CreatedDate = DateTime.Now;
                 mapped.CreatedBy = inventoryTransactionDTO.LoggedInUsername;
+                mapped.TransactionDate = DateTime.Now;
                 mapped.TransactionType = "INBOUND";
-                var product = await _productService.GetShopProductByBranch(inventoryTransactionDTO.ProductId, inventoryTransactionDTO.ReceivingShop);
+                _unitOfWork.BeginTransaction();
+                var product = await _unitOfWork.ShopProductRepository.GetSingleItem(x=>x.ShopProductId == inventoryTransactionDTO.ShopProductId 
+                && x.ShopId == Convert.ToInt16(inventoryTransactionDTO.ReceivingShop));
                 if (product != null)
                 {
-                    product.QuantityInStock += inventoryTransactionDTO.Quantity;
+                    //Update
+                    mapped.QuantityBeforeReorder = product.QuantityInStock;
+                    mapped.UnitPriceOfPreviousStock = product.Price;
+
+                    product.QuantityInStock += inventoryTransactionDTO.Quantity; //updating current in stock new figures
+                    product.Price = inventoryTransactionDTO.RetailPrice; //price might change depending order price
+                    product.LastOrderDate = DateTime.Now; //store last order date
                    // product.LastOrderDate == DateTime.Now;
-                     await _productService.Update(product);
+                   var output =  await _unitOfWork.ShopProductRepository.Update(product);
+                    if (output.IsErrorOccured)
+                    {
+                        _unitOfWork.RollbackTransaction();
+                        return output;
+                    }
 
                 }
 
 
-
-
-                var result = await _inventoryTransaction.Create(mapped);
-
+                mapped.ProductName = product.ProductName;
+                mapped.Rev = 0; //not reversed, 1 -requested, 2 confirmed/authorized
+                mapped.SendingShop = "1";//HQ
+                var result = await _unitOfWork.InventoryTransactionRepository.Create(mapped);
+                if (result.IsErrorOccured)
+                {
+                    _unitOfWork.RollbackTransaction();
+                }
+                else
+                {
+                        _unitOfWork.CommitTransaction();
+                }
                 return result;
             }
             catch (Exception ex)
@@ -65,7 +90,7 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                 mapped.CreatedDate = DateTime.Now;
                 mapped.CreatedBy = inventoryTransactionDTO.LoggedInUsername;
 
-                var product = await _productService.GetShopProductByBranch(inventoryTransactionDTO.ProductId, inventoryTransactionDTO.ReceivingShop);
+                var product = await _productService.GetShopProductByBranch(inventoryTransactionDTO.ShopProductId, inventoryTransactionDTO.ReceivingShop);
                 if (inventoryTransactionDTO.TransactionType == "OUTBOUND") //inbound
                 {
 
@@ -92,41 +117,70 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
 
                 var inventory = new InventoryTransactionDTO
                 {
-                    ProductId = inventoryTransferTransactionDTO.ProductId, //PRODUCT IDENTIFIER--> PRODUCT TABLE
-                    TransactionDate = DateTime.Now, 
-                    Quantity = inventoryTransferTransactionDTO.Quantity,
+                    ShopProductId = inventoryTransferTransactionDTO.ShopProductId, //PRODUCT IDENTIFIER--> PRODUCT TABLE
+                    TransactionDate = DateTime.Now,
+                    Quantity = inventoryTransferTransactionDTO.QuantityToTransfer,
                     Notes = inventoryTransferTransactionDTO.ReasonForTransfer, //reason
-                     SendingShop = inventoryTransferTransactionDTO.SendingShop, 
-                     ReceivingShop = inventoryTransferTransactionDTO.ReceivingShop,
-                     TransactionType = "TRANSFER",
-                     ProductExpiryDate = inventoryTransferTransactionDTO.ProductExpiryDate
+                    SendingShop = inventoryTransferTransactionDTO.SendingShop,
+                    ReceivingShop = inventoryTransferTransactionDTO.ReceivingShop,
+                    TransactionType = "TRANSFER",
+                    ProductExpiryDate = inventoryTransferTransactionDTO.ProductExpiryDate,
+                    RetailPrice = Convert.ToDecimal(inventoryTransferTransactionDTO.SellingPrice)
                 };
 
 
                 var mapped = new AutoMapper<InventoryTransactionDTO, InventoryTransaction>().MapToObject(inventory);
                 mapped.CreatedDate = DateTime.Now;
                 mapped.CreatedBy = inventoryTransferTransactionDTO.LoggedInUsername;
-                
 
+                _unitOfWork.BeginTransaction();
                 //move 4m shop 1
-                var SendingShopProduct = await _productService.GetShopProductByBranch(inventoryTransferTransactionDTO.ProductId, inventoryTransferTransactionDTO.SendingShop);
-                SendingShopProduct.QuantityInStock -= inventoryTransferTransactionDTO.Quantity; //remove stock from sending shop
-                var sendingUpdate = await _productService.Update(SendingShopProduct);
+                var SendingShopProduct = await _unitOfWork.ShopProductRepository.GetSingleItem(x => x.ProductId == inventoryTransferTransactionDTO.ProductID && x.ShopId == Convert.ToInt32(inventoryTransferTransactionDTO.SendingShop));
+                SendingShopProduct.QuantityInStock -= inventoryTransferTransactionDTO.QuantityToTransfer; //remove stock from sending shop
+                var sendingUpdate = await _unitOfWork.ShopProductRepository.Update(SendingShopProduct);
+                if (sendingUpdate.IsErrorOccured)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return sendingUpdate;
+                }
 
                 //add shop 2
-                var ReceivinShopProduct = await _productService.GetShopProductByBranch(inventoryTransferTransactionDTO.ProductId, inventoryTransferTransactionDTO.ReceivingShop);
-                ReceivinShopProduct.QuantityInStock += inventoryTransferTransactionDTO.Quantity; //add stock to receiving shop
-                var receivingUpdate = await _productService.Update(ReceivinShopProduct);
+                var ReceivinShopProduct = await _unitOfWork.ShopProductRepository.GetSingleItem(x => x.ProductId == inventoryTransferTransactionDTO.ProductID && x.ShopId == Convert.ToInt32(inventoryTransferTransactionDTO.ReceivingShop));
+                if (ReceivinShopProduct is null)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return new OutputHandler
+                    {
+                        IsErrorOccured = true,
+                        Message = "Product is not current being Sold, Please add Product to this shop and try again"
+                    };
+                }
 
 
+                ReceivinShopProduct.QuantityInStock += inventoryTransferTransactionDTO.QuantityToTransfer; //add stock to receiving shop
+                var receivingUpdate = await _unitOfWork.ShopProductRepository.Update(ReceivinShopProduct);
+                if (receivingUpdate.IsErrorOccured)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return receivingUpdate;
+                }
 
-                var result = await _inventoryTransaction.Create(mapped);
-
+                mapped.ProductName = SendingShopProduct.ProductName;
+                var result = await _unitOfWork.InventoryTransactionRepository.Create(mapped);
+                if (result.IsErrorOccured)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return result;  
+                }
+                _unitOfWork.CommitTransaction();
                 return result;
             }
             catch (Exception ex)
-            {
+            { 
+                _unitOfWork.RollbackTransaction();
                 return StandardMessages.getExceptionMessage(ex);
+               
+
             }
 
         }
@@ -175,7 +229,7 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                     return output;
                 }
 
-                var SendingShopProduct = await _productService.GetShopProductByBranch(inventoryTransactionDTO.ProductId, inventoryTransactionDTO.SendingShop);
+                var SendingShopProduct = await _productService.GetShopProductByBranch(inventoryTransactionDTO.ShopProductId, inventoryTransactionDTO.SendingShop);
                 SendingShopProduct.QuantityInStock -= inventoryTransactionDTO.Quantity; //remove stock from sending shop
                 var sendingUpdate = await _productService.Update(SendingShopProduct);
 

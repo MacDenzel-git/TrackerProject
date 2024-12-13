@@ -25,6 +25,15 @@ namespace BusinessLogicLayer.Services.ShopProductServiceContainer
         {
             try
             {
+                var isExist = await _shopProduct.AnyAsync(x => x.ShopId == shopProductDTO.ShopId && x.ProductId == shopProductDTO.ProductId);
+                if (isExist)
+                {
+                    return new OutputHandler
+                    {
+                        IsErrorOccured = true,
+                        Message = "Product already added for this shop"
+                    };
+                }
                 var mapped = new AutoMapper<ShopProductDTO, ShopProduct>().MapToObject(shopProductDTO);
                 mapped.QuantityInStock = 0;
                 mapped.Price = 0;
@@ -103,9 +112,9 @@ namespace BusinessLogicLayer.Services.ShopProductServiceContainer
             return new AutoMapper<ShopProduct, ShopProductDTO>().MapToObject(output);
         }
 
-        public async Task<IEnumerable<ShopProductDTO>> GetAllShopProducts()
+        public async Task<IEnumerable<ShopProductDTO>> GetAllShopProducts(int shopId)
         {
-            var output = await _shopProduct.GetAll();
+            var output = await _shopProduct.GetListAsync(x => x.ShopId == shopId && x.IsDeleted != true);
             return new AutoMapper<ShopProduct, ShopProductDTO>().MapToList(output);
         }
 
