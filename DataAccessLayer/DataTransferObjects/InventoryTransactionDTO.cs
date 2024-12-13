@@ -47,7 +47,7 @@ namespace DataAccessLayer.DataTransferObjects
         public string ProductName { get; set; } = null!;
         public string BarCode { get; set; } = null!;
 
-        public int Sold { get; set; }
+        public int? Sold { get; set; }
 
         public int QuantityBeforeReorder { get; set; }
 

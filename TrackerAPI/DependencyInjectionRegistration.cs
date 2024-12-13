@@ -3,6 +3,7 @@ using BusinessLogicLayer.Services.InventoryTransactionServiceContainer;
 using BusinessLogicLayer.Services.InventoryTransactionsServiceContainer;
 using BusinessLogicLayer.Services.OrderDetailServiceContainer;
 using BusinessLogicLayer.Services.OrderServiceContainer;
+using BusinessLogicLayer.Services.POSServiceContainer;
 using BusinessLogicLayer.Services.ProductServiceContainer;
 using BusinessLogicLayer.Services.ProductsServiceContainer;
 using BusinessLogicLayer.Services.ShopProductServiceContainer;
@@ -25,6 +26,7 @@ namespace TrackerAPI
             service.AddScoped<IShopProductService, ShopProductService>();
             service.AddScoped<ISupplierService, SupplierService>();
              service.AddScoped<IShopService, ShopService>();
+             service.AddScoped<IPosService, PosService>();
             return service;
         }
 
@@ -39,6 +41,7 @@ namespace TrackerAPI
             service.AddScoped<GenericRepository<ShopProduct>>();
             service.AddScoped<GenericRepository<Supplier>>();
             service.AddScoped<GenericRepository<TransactionType>>();
+            service.AddScoped<GenericRepository<JournalEntry>>();
             return service;
         }
     }

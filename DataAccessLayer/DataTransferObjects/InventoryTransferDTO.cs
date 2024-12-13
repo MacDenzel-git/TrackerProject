@@ -14,7 +14,7 @@ namespace DataAccessLayer.DataTransferObjects
         public int ProductID { get; set; }
         public string BarCode { get; set; } = null!;
 
-        public int Sold { get; set; }
+        public int? Sold { get; set; }
 
         public DateTime ProductExpiryDate { get; set; }
         public string ReasonForTransfer { get; set; }

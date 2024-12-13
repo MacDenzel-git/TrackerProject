@@ -53,6 +53,9 @@ namespace DataAccessLayer.DataTransferObjects
         public decimal OrderPrice { get; set; }
 
         public decimal RetailPrice { get; set; }
+        public string BarCode { get; set; } = null!;
+
+        public int? Sold { get; set; }
 
     }
 }

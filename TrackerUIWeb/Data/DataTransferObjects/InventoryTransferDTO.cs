@@ -17,5 +17,8 @@ namespace TrackerUIWeb.Data.DataTransferObjects
         public string SellingPrice { get; set; }
         public string FromShopRetailPrice { get; set; } //how much the product is being sold at the current shop
         public string? TransferApprovalPersonel { get; set; }
+        public string BarCode { get; set; } = null!;
+
+        public int? Sold { get; set; }
     }
 }

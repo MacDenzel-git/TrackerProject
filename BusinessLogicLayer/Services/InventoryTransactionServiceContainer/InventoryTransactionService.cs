@@ -39,7 +39,7 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                 mapped.TransactionDate = DateTime.Now;
                 mapped.TransactionType = "INBOUND";
                 _unitOfWork.BeginTransaction();
-                var product = await _unitOfWork.ShopProductRepository.GetSingleItem(x=>x.ShopProductId == inventoryTransactionDTO.ShopProductId 
+                var product = await _unitOfWork.ShopProductRepository.GetSingleItem(x => x.ShopProductId == inventoryTransactionDTO.ShopProductId
                 && x.ShopId == Convert.ToInt16(inventoryTransactionDTO.ReceivingShop));
                 if (product != null)
                 {
@@ -50,8 +50,8 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                     product.QuantityInStock += inventoryTransactionDTO.Quantity; //updating current in stock new figures
                     product.Price = inventoryTransactionDTO.RetailPrice; //price might change depending order price
                     product.LastOrderDate = DateTime.Now; //store last order date
-                   // product.LastOrderDate == DateTime.Now;
-                   var output =  await _unitOfWork.ShopProductRepository.Update(product);
+                                                          // product.LastOrderDate == DateTime.Now;
+                    var output = await _unitOfWork.ShopProductRepository.Update(product);
                     if (output.IsErrorOccured)
                     {
                         _unitOfWork.RollbackTransaction();
@@ -71,7 +71,7 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                 }
                 else
                 {
-                        _unitOfWork.CommitTransaction();
+                    _unitOfWork.CommitTransaction();
                 }
                 return result;
             }
@@ -97,7 +97,7 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                     product.QuantityInStock += inventoryTransactionDTO.Quantity;
                 }
 
-                
+
 
 
                 var result = await _inventoryTransaction.Create(mapped);
@@ -125,7 +125,8 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                     ReceivingShop = inventoryTransferTransactionDTO.ReceivingShop,
                     TransactionType = "TRANSFER",
                     ProductExpiryDate = inventoryTransferTransactionDTO.ProductExpiryDate,
-                    RetailPrice = Convert.ToDecimal(inventoryTransferTransactionDTO.SellingPrice)
+                    RetailPrice = Convert.ToDecimal(inventoryTransferTransactionDTO.SellingPrice),
+                    BarCode = inventoryTransferTransactionDTO.BarCode
                 };
 
 
@@ -170,22 +171,22 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
                 if (result.IsErrorOccured)
                 {
                     _unitOfWork.RollbackTransaction();
-                    return result;  
+                    return result;
                 }
                 _unitOfWork.CommitTransaction();
                 return result;
             }
             catch (Exception ex)
-            { 
+            {
                 _unitOfWork.RollbackTransaction();
                 return StandardMessages.getExceptionMessage(ex);
-               
+
 
             }
 
         }
 
-      
+
         public async Task<OutputHandler> DeleteRequest(InventoryTransactionDTO inventoryTransactionDTO)
         {
 
