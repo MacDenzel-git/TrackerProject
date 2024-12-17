@@ -36,7 +36,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
             return product;
         }
 
-        public Task<ShopProductDTO> Payment(ProductSearchParamDTO productSearchParams)
+        public Task<ShopProductDTO> Payment(JounalEntryDTO jounalEntry, List<ProductDTO> cart)
         {
             throw new NotImplementedException();
         }
