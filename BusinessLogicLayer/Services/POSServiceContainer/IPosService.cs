@@ -11,7 +11,6 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
     {
        Task<ShopProductDTO> GetProduct(ProductSearchParamDTO productSearchParams);
        Task<ShopProductDTO> Payment(JounalEntryDTO jounalEntry, List<ProductDTO> cart);
-
-         
+        
     }
 }
