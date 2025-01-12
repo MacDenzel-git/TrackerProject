@@ -190,7 +190,7 @@
                         <div class="mb-3 col-md-3">
                         <div class="form-group">
                             <label for="exampleFormControlInput1">   Barcode</label>
-                            <InputNumber class="form-control" @bind-Value="InventoryTransaction.BarCode"></InputNumber>
+                            <InputText class="form-control" @bind-Value="InventoryTransaction.BarCode"></InputText>
                         </div>
                         </div>
                         </div>
@@ -297,12 +297,12 @@
                                 <div class="mb-3 col-md-4">
                                     <label for="Name" class="form-label">Products</label>
                                     <select required for="ProductId" class="form-control" @onchange="TransferShopProductChanged">
-                                      <option >
+                                      <option selected="0" >
                                            Select Product
                                        </option>
                                         @foreach (var item in ProductList.OrderByDescending(x => x.ProductName))
                                         {
-                                            <option  selected="@item.ShopProductID"  value="@item.ShopProductID">
+                                            <option    value="@item.ShopProductID">
                                                 @item.ProductName
                                             </option>
                                         }

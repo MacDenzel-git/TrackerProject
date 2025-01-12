@@ -1,4 +1,5 @@
-﻿using DataAccessLayer.DataTransferObjects;
+﻿using AllinOne.DataHandlers;
+using DataAccessLayer.DataTransferObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,9 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
 {
     public interface IPosService
     {
-       Task<ShopProductDTO> GetProduct(ProductSearchParamDTO productSearchParams);
-       Task<ShopProductDTO> Payment(JounalEntryDTO jounalEntry, List<ProductDTO> cart);
+       Task<ShopProductDTO> GetProduct(ProductSearchDTO productSearchParams);
+       Task<ShopProductDTO> Payment(JournalEntryDTO jounalEntry, List<ProductDTO> cart);
+       Task<OutputHandler> NewTransaction(JournalEntryDTO jounalEntry);
         
     }
 }

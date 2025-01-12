@@ -30,4 +30,6 @@ public partial class Shop
     public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
+
+    public int? ReceiptRange { get; set; }
 }

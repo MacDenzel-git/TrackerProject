@@ -1,5 +1,605 @@
-﻿<h3>POSDASHBOARD</h3>
+﻿@page "/"
+@page "/POS"
+<style>
+    .outer {
+    overflow-y: auto;
+    height: 300px;
+    }
 
-@code {
+    .outer {
+    width: 100%;
+    -layout: fixed;
+    }
+
+    .outer th {
+    text-align: left;
+    top: 0;
+    position: sticky;
+    background-color: white;
+    }
+</style>
+
+
+@using AllinOne.DataHandlers
+@using DataAccessLayer.DataTransferObjects
+@using Microsoft.AspNetCore.Components;
+@using TrackerUIWeb.Data.ApiGateway
+@using TrackerUIWeb.Data.DataTransferObjects
+@using TrackerUIWeb.Utilities
+
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
+@inject NavigationManager NavigationManager
+ @inject HttpHandlerService httpHandler
+
+@inject IUtilService _UtilService;
+
+
+<div class="row">
+    <div class="col-4">
+        <Button class="p-3 btn btn-sm btn-danger" Color="ButtonColor.Success" @onclick="NewTransaction">
+            New
+        </Button>
+    </div>
+    <div class="col-4"></div>
+    <div class="col-4">
+        <div class="row">
+            <div class="col-6 fw-bold"><p> Receipt: @ShopReceipt</p></div>
+
+        </div>
+    </div>
+</div>
+@if (IsSearchFormActive)
+{
+    <EditForm Model="@ProductSearch" OnValidSubmit="SearchProduct">
+        <div class="row">
+
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">    Search Code</label>
+                    <InputText class="form-control" @bind-Value="ProductSearch.ProductCode"></InputText>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">   Quantity</label>
+                    <InputNumber class="form-control" @bind-Value="ProductSearch.Quantity"></InputNumber>
+                </div>
+            </div>
+            <div class="col-4 mt-3">
+                <Button Color="ButtonColor.Primary" @onclick="SearchProduct">Search</Button>
+
+            </div>
+            @* <div class="form-group">
+                    <label for="exampleFormControlInput1">   Discount</label>
+                    <InputNumber class="form-control" @bind-Value="ProductSearch.Discount"></InputNumber>
+                </div> *@
+
+
+
+        </div>
+
+
+    </EditForm>
+}
+@if (!string.IsNullOrEmpty(OutputHandler.Message))
+{
+    if (OutputHandler.IsErrorOccured)
+    {
+        <p class="text-danger">@OutputHandler.Message</p>
+    }
+
+
 
 }
+
+<br />
+<div class="outer">
+    <table class="table table-striped table-sm align-middle table-bordered">
+        <thead class="table-success">
+            <tr>
+                <th>Product Code</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (CartItems.Count() > 0)
+            {
+                @foreach (var item in CartItems)
+                {
+                    <tr>
+
+
+                        <td>@item.ProductId</td>
+                        <td class="text">@item.ProductName</td>
+                        <td class="text">@item.Quantity</td>
+                        <td class="text">@item.Price</td>
+                        <td>
+
+                            @*                         <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.ProductId)"> Delete</button>
+ *@                    </td>
+                    </tr>
+                }   }
+
+                <tr>            
+                     <td></td>
+                        <td class="text"></td>
+                        <td class="text"></td>
+                        <td class="text fw-bold">Total: @Total</td>
+                        <td>
+ </tr>
+        </tbody>
+
+    </table>
+</div>
+<div class="row">
+    <div class="col-2">
+        @if (IsCheckOutButtonActive)
+        {
+                    <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
+
+        }
+    </div>
+    <div class="col-4">@if (CheckoutOptionIsActive)
+{
+    
+               
+                    <button class="p-3  btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
+           
+          
+                    <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> CASH </button>
+ 
+              
+                    <button class="p-3  btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> CASH </button>
+         
+
+}</div>
+    <div class="col-4">
+        <div class="row">
+
+            <div class="col-6 fw-bold"><p> Total: @Total</p></div>
+        </div>
+    </div>
+</div>
+
+
+
+@* 
+
+@if (CheckoutOptionIsActive)
+{
+    <div class="row">
+        <div class="col-4">
+            <div class="row">
+
+                <div class="col-4">
+                    <button class="p-3 btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
+                </div>
+                <div class="col-4">
+                    <button class="p-3 btn btn-sm btn-warning" @onclick="()=>Visa()"> CASH </button>
+
+                </div>
+                <div class="col-4">
+                    <button class="p-3 btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> CASH </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+} *@
+
+
+@* PAYMODE MODALS *@
+
+@* CASH START *@
+<div>
+    <Modal @ref="cashModal"
+    title=@Title>
+
+        <BodyTemplate>
+
+            @if (!string.IsNullOrEmpty(OutputHandler.Message))
+            {
+                if (OutputHandler.IsErrorOccured)
+                {
+                    <p class="text-danger">@OutputHandler.Message</p>
+                }
+                else
+                {
+                    <p class="text-success">@OutputHandler.Message</p>
+                }
+
+
+            }
+            <EditForm Model="@Payment" OnValidSubmit="Save">
+
+                <div class="row">
+                    <form>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">    Total</label>
+                            <InputNumber class="form-control" readOnly="true" @bind-Value="Payment.AmountExpected"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">   Amount Paid</label>
+                            <InputNumber class="form-control" @bind-Value="Payment.AmountPaid"></InputNumber>
+                        </div>
+                        <Button Color="ButtonColor.Primary"  >Pay</Button>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">    Change/Cashback</label>
+                            <InputNumber class="form-control" readOnly="true" @bind-Value="Payment.CashBack"></InputNumber>
+                        </div>
+                        @*  <div class="mb-3 col-md-3">
+                            <label for="Name" class="form-label">Categories</label>
+                            <select required for="CategoryId" class="form-control" @bind="@Product.CategoryId">
+                                @foreach (var item in CategoryList.OrderByDescending(x => x.CategoryName))
+                                {
+                                    <option selected="@item.CategoryId" value="@item.CategoryId">
+                                        @item.CategoryName
+                                    </option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => Product.CategoryId)" />
+                        </div> *@
+                    </form>
+                </div>
+            </EditForm>
+
+
+        </BodyTemplate>
+        <FooterTemplate>
+
+
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        </FooterTemplate>
+
+    </Modal>
+
+
+
+
+</div>
+@* CASH END *@
+
+
+
+
+
+
+@code {
+    private SupplierDTO Supplier { get; set; } = new SupplierDTO();
+    private PaymentDTO Payment { get; set; } = new PaymentDTO();
+    private ProductSearchDTO ProductSearch { get; set; } = new ProductSearchDTO();
+    private ShopProductDTO Product { get; set; } = new ShopProductDTO();
+    private JournalEntryDTO JournalEntry = new JournalEntryDTO();
+    private List<CartItemsDTO> CartItems = new List<CartItemsDTO>();
+
+    private string Action = "";
+    string Role = "";
+    private int SupplierId { get; set; }
+    private int ShopId { get; set; }
+    protected string Title = "";
+    protected string ShopReceipt = "";
+    // protected string Title = "Configure Supplier";
+    private bool IsCancelRequest;
+    private bool CheckoutOptionIsActive =false;
+    private bool IsSearchFormActive =false;
+    private bool IsCheckOutButtonActive =false;
+    protected OutputHandler OutputHandler = new();
+    protected decimal Total = 0;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Role = await sessionStorage.GetItemAsync<string>("Role");
+        string Username = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+
+        // if (!string.IsNullOrEmpty(Role) || !string.IsNullOrEmpty(Username))
+        // {
+
+        //     NavigationManager.NavigateTo("/Login");
+
+        // }
+        if (true)
+        {
+
+        }
+    }
+
+
+    protected async Task<OutputHandler> NewTransaction()
+    {
+
+        JournalEntry.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        JournalEntry.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+        ShopId = await sessionStorage.GetItemAsync<int>("shopId");
+
+
+        JournalEntry = new JournalEntryDTO
+                {
+                Processedby = JournalEntry.LoggedInUsername,
+                LoggedInUsername = JournalEntry.LoggedInUsername,
+                LoggedInUserRole = JournalEntry.LoggedInUserRole,
+                ShopId = ShopId,
+                 ReceiptNo ="",
+                Rev = "-1",
+                DrCr = "C",
+                ProcessedStatus = "0",
+                PayMode = "",
+                TranscationDetails = "Transaction Started",
+                Revreq = "0",
+
+                CreatedDateTime = DateTime.Now,
+                ProcessDateTime = DateTime.Now
+
+                };
+        OutputHandler = await httpHandler.Create<JournalEntryDTO>("POS/NewTransaction", JournalEntry);
+
+        if (OutputHandler.IsErrorOccured == false)
+        {
+            ShopReceipt = OutputHandler.Result.ToString();
+            OnProccessCompleteNotify();
+            IsSearchFormActive = true;
+        }
+        else
+        {
+            // OnProccessCompleteNotify();
+        }
+
+
+
+        return OutputHandler;
+
+
+    }
+
+
+    protected async Task<OutputHandler> Save()
+    {
+
+        Supplier.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+
+        if (Action == "edit")
+        {
+            OutputHandler = await httpHandler.Update<SupplierDTO>("Supplier/Update", Supplier);
+
+            if (OutputHandler.IsErrorOccured == false)
+            {
+                NavigationManager.NavigateTo("/Supplier/SupplierConfiguration", true);
+                OnHideModalClick();
+            }
+            else
+            {
+                OnProccessCompleteNotify();
+            }
+        }
+        else
+        {
+
+
+
+
+            if (Supplier.SupplierId != 0)
+            {
+                return new OutputHandler { IsErrorOccured = true, Message = "Something went Wrong" };
+            }
+
+            OutputHandler = await httpHandler.Create<SupplierDTO>("Supplier/Create", Supplier);
+            if (OutputHandler.IsErrorOccured == false)
+            {
+
+
+                OnProccessCompleteNotify();
+                OnHideModalClick();
+                NavigationManager.NavigateTo("/Supplier/SupplierConfiguration", true);
+            }
+            else
+            {
+                OnProccessCompleteNotify();
+
+            }
+        }
+
+        return OutputHandler;
+
+
+    }
+
+    protected async Task<OutputHandler> SearchProduct()
+    {
+
+        Supplier.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+        ProductSearch.ShopId = await sessionStorage.GetItemAsync<int>("shopId");
+
+         OutputHandler = new OutputHandler
+                {
+                    IsErrorOccured = false,
+                    Message = ""
+                };
+        Product = await httpHandler.GetSingle<ShopProductDTO>("POS/SearchProduct", ProductSearch);
+        if (Product.QuantityInStock < ProductSearch.Quantity)
+        {
+            OutputHandler = new OutputHandler
+                {
+                    IsErrorOccured = true,
+                    Message = "Quantity Low"
+                };
+        }else
+        {
+            Total += Product.Price * ProductSearch.Quantity;
+            CartItems.Add(
+                new CartItemsDTO
+                    {
+                        ProductId = Product.ProductID,
+                        JournalEntryId = Product.JournalEntryId,
+                        Price = Product.Price * ProductSearch.Quantity,
+                        Quantity = ProductSearch.Quantity,
+                        ProductName = Product.ProductName
+                    });
+        }
+        if (OutputHandler.IsErrorOccured == false)
+        {
+            ///added notificaation
+        }
+        else
+        {
+            OnProccessCompleteNotify();
+        }
+
+        if (CartItems.Count() > 0)
+        {
+            IsCheckOutButtonActive = true;
+        }
+        return OutputHandler;
+
+
+    }
+
+    public void Cancel()
+    {
+        IsCancelRequest = true;
+        NavigationManager.NavigateTo("/Supplier/AllUploads");
+    }
+
+
+    public async void CheckOut()
+    {
+        // if (CartItems.Count() == 0)
+        // {
+        //     OutputHandler = new OutputHandler
+        //         {
+        //             IsErrorOccured = true,
+        //             Message = "No items in the Cart"
+        //         };
+
+        //     return;
+        // }
+        CheckoutOptionIsActive = true;
+        
+    }
+
+
+    public async void Cash()
+    {
+        
+        OnShowCashModal();
+    }
+    public async void Visa()
+    {
+        
+        OnShowCashModal();
+    }
+    public async void MobileMoney()
+    {
+        
+        OnShowCashModal();
+    }
+
+
+    
+    protected async Task RequestDelete()
+    {
+        Supplier.IsDeleted = true;
+        Supplier.DeletedBy = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        Supplier.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+        //Supplier.
+        // Supplier.DeletedBy = await sessionStorage.GetItemAsync<string>("MachineName");
+        OutputHandler = await httpHandler.Delete<SupplierDTO>("Supplier/DeleteRequest", Supplier);
+        if (OutputHandler.IsErrorOccured == false)
+        {
+            NavigationManager.NavigateTo("/Supplier/SupplierConfiguration", true);
+
+
+            StateHasChanged();
+            OnProccessCompleteNotify();
+            OnHideModalClick();
+        }
+        else
+        {
+            OnProccessCompleteNotify();
+
+        }
+    }
+
+
+
+
+
+    protected async Task ApproveDelete()
+    {
+        Supplier.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+        Supplier.DeleteApprover = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        Supplier.DateDeleted = DateTime.Now;
+        // Supplier.DeletedBy = await sessionStorage.GetItemAsync<string>("MachineName");
+        OutputHandler = await httpHandler.Delete<SupplierDTO>("Supplier/DeleteApproval", Supplier);
+        if (OutputHandler.IsErrorOccured == false)
+        {
+            NavigationManager.NavigateTo("/Supplier/SupplierConfiguration", true);
+
+
+            StateHasChanged();
+            OnProccessCompleteNotify();
+            OnHideModalClick();
+        }
+        else
+        {
+            OnProccessCompleteNotify();
+
+        }
+    }
+
+
+ 
+
+
+
+
+
+
+
+    private Modal modal = default!;
+    private Modal cashModal = default!;
+
+    [Inject] ToastService ToastService { get; set; } = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+     
+    
+
+     private async Task OnShowCashModal()
+    {
+        await cashModal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+   
+    
+
+    
+
+    private void OnProccessCompleteNotify()
+    {
+        ToastService.Notify(new(ToastType.Info, $"{OutputHandler.Message}"));
+    }
+
+
+
+}
+
+
+
+

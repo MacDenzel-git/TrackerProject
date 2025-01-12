@@ -26,6 +26,9 @@ namespace BusinessLogicLayer.Services.ShopServiceContainer
                 var mapped = new AutoMapper<ShopDTO, Shop>().MapToObject(shopDTO);
                 mapped.CreatedDate = DateTime.Now;
                 mapped.CreatedBy = shopDTO.LoggedInUsername;
+                var shops = await _shop.GetAll();
+                var receipt =  shops.Max().ReceiptRange;
+                mapped.ReceiptRange = receipt + 1;
                 var result = await _shop.Create(mapped);
 
                 return result;

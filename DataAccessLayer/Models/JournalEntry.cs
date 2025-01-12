@@ -35,5 +35,9 @@ public partial class JournalEntry
 
     public DateTime? DateModified { get; set; }
 
-    public string? Barcode { get; set; }
+    public int? ShopId { get; set; }
+
+    public double AmountReceivedFromCustomer { get; set; }
+
+    public double CashBack { get; set; }
 }

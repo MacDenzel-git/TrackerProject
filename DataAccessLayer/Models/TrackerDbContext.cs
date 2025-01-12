@@ -15,6 +15,8 @@ public partial class TrackerDbContext : DbContext
     {
     }
 
+    public virtual DbSet<CartItem> CartItems { get; set; }
+
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Country> Countries { get; set; }
@@ -47,6 +49,16 @@ public partial class TrackerDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CartItem>(entity =>
+        {
+            entity.HasNoKey();
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("ID");
+            entity.Property(e => e.ReceiptNumber).HasMaxLength(500);
+        });
+
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.CategoryId).HasName("PK__Categori__19093A2BCEF5D177");
@@ -115,7 +127,6 @@ public partial class TrackerDbContext : DbContext
         {
             entity.HasKey(e => e.JournalEntryTransId).HasName("PK_ReceiptNo");
 
-            entity.Property(e => e.Barcode).HasMaxLength(200);
             entity.Property(e => e.ChequeNumber).HasMaxLength(50);
             entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
             entity.Property(e => e.DateModified).HasColumnType("datetime");

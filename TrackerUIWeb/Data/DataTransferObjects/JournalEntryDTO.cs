@@ -1,10 +1,12 @@
-﻿namespace TrackerUIWeb.Data.DataTransferObjects
+﻿using DataAccessLayer.DataTransferObjects;
+
+namespace TrackerUIWeb.Data.DataTransferObjects
 {
-    public class JournalEntryDTO
+    public class JournalEntryDTO : UserInformationDTO
     {
         public long JournalEntryTransId { get; set; }
 
-        public string ReceiptNo { get; set; } = null!;
+        public string ReceiptNo { get; set; }
 
         public string? ChequeNumber { get; set; }
 
@@ -12,27 +14,31 @@
 
         public DateTime CreatedDateTime { get; set; }
 
-        public string PayMode { get; set; } = null!;
+        public string PayMode { get; set; }
 
-        public string Rev { get; set; } = null!;
+        public string Rev { get; set; }
 
-        public string DrCr { get; set; } = null!;
+        public string DrCr { get; set; }
 
-        public string ProcessedStatus { get; set; } = null!;
+        public string ProcessedStatus { get; set; }
 
         public DateTime ProcessDateTime { get; set; }
 
-        public string Processedby { get; set; } = null!;
+        public string Processedby { get; set; }
 
         public string? TranscationDetails { get; set; }
 
-        public string Revreq { get; set; } = null!;
+        public string Revreq { get; set; }
 
         public string? ModifiedBy { get; set; }
 
         public DateTime? DateModified { get; set; }
 
-        public string? Barcode { get; set; }
+        public int? ShopId { get; set; }
+
+        public double AmountReceivedFromCustomer { get; set; }
+
+        public double CashBack { get; set; }
 
     }
 }

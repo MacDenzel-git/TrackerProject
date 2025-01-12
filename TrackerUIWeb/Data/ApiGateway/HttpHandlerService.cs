@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
+using TrackerUIWeb.Data.DataTransferObjects;
 
 namespace TrackerUIWeb.Data.ApiGateway
 {
@@ -69,6 +70,51 @@ namespace TrackerUIWeb.Data.ApiGateway
             }
         }
 
+
+        public async Task<T> Get<T>(string endpoint, T param)
+        {
+            try
+            {
+                endpoint = $"{_httpClient.BaseAddress}{endpoint}";
+
+                HttpContent content = new StringContent(JsonConvert.SerializeObject(param), Encoding.UTF8);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                var response = await _httpClient.PostAsJsonAsync<T>(endpoint, param);
+
+
+                var result = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<T>(result);
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public async Task<T> GetSingle<T>(string endpoint, ProductSearchDTO param)
+        {
+            try
+            {
+                endpoint = $"{_httpClient.BaseAddress}{endpoint}";
+
+                HttpContent content = new StringContent(JsonConvert.SerializeObject(param), Encoding.UTF8);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                var response = await _httpClient.PostAsJsonAsync<ProductSearchDTO>(endpoint, param);
+
+
+                var result = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<T>(result);
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
         public async Task<OutputHandler> Delete(string endpoint)
         {
             try

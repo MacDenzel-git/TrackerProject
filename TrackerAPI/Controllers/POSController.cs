@@ -1,6 +1,7 @@
 ﻿using AllinOne.DataHandlers;
 using BusinessLogicLayer.Services.POSServiceContainer;
 using DataAccessLayer.DataTransferObjects;
+using DataAccessLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TrackerAPI.Controllers
@@ -17,9 +18,27 @@ namespace TrackerAPI.Controllers
         }
 
         [HttpPost("SearchProduct")]
-        public async Task<IActionResult> SearchProduct(ProductSearchParamDTO productSearchParam)
+        public async Task<IActionResult> SearchProduct(ProductSearchDTO productSearchParam)
         {
             var product = await _posService.GetProduct(productSearchParam);
+            if (product == null)
+            {
+                return Ok(new OutputHandler
+                {
+                    Message = "Product Not Found"
+                });
+            }
+            else
+            {
+                return Ok(product);
+            }
+        }
+
+        
+        [HttpPost("NewTransaction")]
+        public async Task<IActionResult> NewTransaction(JournalEntryDTO productSearchParam)
+        {
+            var product = await _posService.NewTransaction(productSearchParam);
             if (product == null)
             {
                 return Ok(new OutputHandler

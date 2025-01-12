@@ -36,5 +36,7 @@ namespace TrackerUIWeb.Data.DataTransferObjects
         public string? DeletedApprover { get; set; }
 
         public DateTime? DateDeleted { get; set; }
+
+        public int JournalEntryId { get; set; }
     }
 }

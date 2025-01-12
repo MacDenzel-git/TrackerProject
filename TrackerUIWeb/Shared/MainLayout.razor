@@ -33,6 +33,7 @@
     {
         await sessionStorage.SetItemAsync("LoggedInUser", "Denzel");
         await sessionStorage.SetItemAsync("Role", "Admin");
+        await sessionStorage.SetItemAsync("shopId", 1);
 
         if (navItems is null)
             navItems = GetNavItems();

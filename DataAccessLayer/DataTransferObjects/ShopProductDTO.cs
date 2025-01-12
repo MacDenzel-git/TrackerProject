@@ -14,6 +14,7 @@ namespace DataAccessLayer.DataTransferObjects
 
         public string? Description { get; set; }
 
+        public int JournalEntryId { get; set; }
 
         public int? ShopId { get; set; }
 
