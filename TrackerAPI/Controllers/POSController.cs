@@ -36,9 +36,9 @@ namespace TrackerAPI.Controllers
 
         
         [HttpPost("NewTransaction")]
-        public async Task<IActionResult> NewTransaction(JournalEntryDTO productSearchParam)
+        public async Task<IActionResult> NewTransaction(JournalEntryDTO jentryDTO)
         {
-            var product = await _posService.NewTransaction(productSearchParam);
+            var product = await _posService.NewTransaction(jentryDTO);
             if (product == null)
             {
                 return Ok(new OutputHandler
@@ -49,6 +49,20 @@ namespace TrackerAPI.Controllers
             else
             {
                 return Ok(product);
+            }
+        }
+        
+        [HttpPost("Payment")]
+        public async Task<IActionResult> Payment(JournalEntryDTO jentryDTO)
+        {
+            var output = await _posService.Payment(jentryDTO);
+            if (output == null)
+            {
+                return Ok(output);
+            }
+            else
+            {
+                return Ok(output);
             }
         }
     }

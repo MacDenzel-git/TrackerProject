@@ -14,6 +14,8 @@ namespace DataAccessLayer.UnitOfWorkContainer
         private TrackerDbContext context = new TrackerDbContext();
         private GenericRepository<InventoryTransaction> inventoryTransactionRepository;
         private GenericRepository<ShopProduct> shopProductRepository;
+        private GenericRepository<JournalEntry> journalEntryRepository;
+        private GenericRepository<CartItem> cartItemRepository;
        
         private IDbContextTransaction _transaction;
 
@@ -29,6 +31,33 @@ namespace DataAccessLayer.UnitOfWorkContainer
             }
 
         }
+           public GenericRepository<JournalEntry> JournalEntryRepository
+        {
+            get
+            {
+                if (this.journalEntryRepository == null)
+                {
+                    this.journalEntryRepository = new GenericRepository<JournalEntry>(context);
+                }
+                return journalEntryRepository;
+            }
+
+        }
+         
+        public GenericRepository<CartItem> CartItemsRepository
+        {
+            get
+            {
+                if (this.cartItemRepository == null)
+                {
+                    this.cartItemRepository = new GenericRepository<CartItem>(context);
+                }
+                return cartItemRepository;
+            }
+
+        }
+
+        
 
 
         public GenericRepository<ShopProduct> ShopProductRepository

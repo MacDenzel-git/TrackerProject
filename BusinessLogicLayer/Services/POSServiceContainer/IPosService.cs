@@ -11,7 +11,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
     public interface IPosService
     {
        Task<ShopProductDTO> GetProduct(ProductSearchDTO productSearchParams);
-       Task<ShopProductDTO> Payment(JournalEntryDTO jounalEntry, List<ProductDTO> cart);
+       Task<OutputHandler> Payment(JournalEntryDTO jounalEntry);
        Task<OutputHandler> NewTransaction(JournalEntryDTO jounalEntry);
         
     }

@@ -123,39 +123,49 @@
                     </tr>
                 }   }
 
-                <tr>            
-                     <td></td>
-                        <td class="text"></td>
-                        <td class="text"></td>
-                        <td class="text fw-bold">Total: @Total</td>
-                        <td>
- </tr>
+
         </tbody>
 
     </table>
 </div>
+<table class="table table-striped table-sm align-middle table-bordered">
+    <thead class="">
+        <tr>
+            <th style="color:white !important">Product Code</th>
+            <th style="color:white !important">Product Name</th>
+            <th style="color:black !important">Total</th>
+            <th style="color:black !important">@Total</th>
+            <th style="color:white !important">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+
+
+    </tbody>
+
+</table>
 <div class="row">
     <div class="col-2">
         @if (IsCheckOutButtonActive)
         {
-                    <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
+            <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
 
-        }
+        }  
     </div>
     <div class="col-4">@if (CheckoutOptionIsActive)
-{
-    
-               
-                    <button class="p-3  btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
-           
-          
-                    <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> CASH </button>
- 
-              
-                    <button class="p-3  btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> CASH </button>
-         
+        {
 
-}</div>
+
+            <button class="p-3  btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
+
+
+            <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> CASH </button>
+
+
+            <button class="p-3  btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> CASH </button>
+
+
+        }</div>
     <div class="col-4">
         <div class="row">
 
@@ -213,7 +223,7 @@
 
 
             }
-            <EditForm Model="@Payment" OnValidSubmit="Save">
+            <EditForm Model="@Payment" OnValidSubmit="MakePayment">
 
                 <div class="row">
                     <form>
@@ -225,7 +235,7 @@
                             <label for="exampleFormControlInput1">   Amount Paid</label>
                             <InputNumber class="form-control" @bind-Value="Payment.AmountPaid"></InputNumber>
                         </div>
-                        <Button Color="ButtonColor.Primary"  >Pay</Button>
+                        <Button  Class="p-2 m-3" Color="ButtonColor.Primary" @onclick="MakePayment"  >Pay</Button>
                         <div class="form-group">
                             <label for="exampleFormControlInput1">    Change/Cashback</label>
                             <InputNumber class="form-control" readOnly="true" @bind-Value="Payment.CashBack"></InputNumber>
@@ -251,7 +261,7 @@
         <FooterTemplate>
 
 
-            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideCashModalClick">Close</Button>
         </FooterTemplate>
 
     </Modal>
@@ -288,7 +298,7 @@
     private bool IsCheckOutButtonActive =false;
     protected OutputHandler OutputHandler = new();
     protected decimal Total = 0;
-
+    string Paymode = "";
 
 
     protected override async Task OnInitializedAsync()
@@ -357,52 +367,29 @@
     }
 
 
-    protected async Task<OutputHandler> Save()
+    protected async Task<OutputHandler> MakePayment()
     {
+        JournalEntry.CartItems = CartItems;
+        JournalEntry.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        JournalEntry.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+        JournalEntry.ShopId = await sessionStorage.GetItemAsync<int>("ShopId");
+        JournalEntry.PayMode = Paymode;
+        JournalEntry.AmountPaid= Payment.AmountExpected;
+        JournalEntry.AmountReceivedFromCustomer = Payment.AmountPaid;
+        JournalEntry.CashBack = Payment.CashBack;
 
-        Supplier.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
-        Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
+        OutputHandler = await httpHandler.Update<JournalEntryDTO>("POS/PAYMENT", JournalEntry);
 
-        if (Action == "edit")
+        if (OutputHandler.IsErrorOccured == false)
         {
-            OutputHandler = await httpHandler.Update<SupplierDTO>("Supplier/Update", Supplier);
-
-            if (OutputHandler.IsErrorOccured == false)
-            {
-                NavigationManager.NavigateTo("/Supplier/SupplierConfiguration", true);
-                OnHideModalClick();
-            }
-            else
-            {
-                OnProccessCompleteNotify();
-            }
+           
         }
         else
         {
-
-
-
-
-            if (Supplier.SupplierId != 0)
-            {
-                return new OutputHandler { IsErrorOccured = true, Message = "Something went Wrong" };
-            }
-
-            OutputHandler = await httpHandler.Create<SupplierDTO>("Supplier/Create", Supplier);
-            if (OutputHandler.IsErrorOccured == false)
-            {
-
-
-                OnProccessCompleteNotify();
-                OnHideModalClick();
-                NavigationManager.NavigateTo("/Supplier/SupplierConfiguration", true);
-            }
-            else
-            {
-                OnProccessCompleteNotify();
-
-            }
+            OnProccessCompleteNotify();
+//print Receipt 
         }
+
 
         return OutputHandler;
 
@@ -416,7 +403,7 @@
         Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
         ProductSearch.ShopId = await sessionStorage.GetItemAsync<int>("shopId");
 
-         OutputHandler = new OutputHandler
+        OutputHandler = new OutputHandler
                 {
                     IsErrorOccured = false,
                     Message = ""
@@ -480,13 +467,14 @@
         //     return;
         // }
         CheckoutOptionIsActive = true;
-        
+
     }
 
 
     public async void Cash()
     {
-        
+        Paymode = "CASH";
+        Payment.AmountExpected = Total;
         OnShowCashModal();
     }
     public async void Visa()
@@ -587,7 +575,10 @@
     }
 
    
-    
+    private async Task OnHideCashModalClick()
+    {
+        await cashModal.HideAsync();
+    }
 
     
 

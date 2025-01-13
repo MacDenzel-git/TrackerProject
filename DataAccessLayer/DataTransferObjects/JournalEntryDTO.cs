@@ -8,13 +8,15 @@ namespace DataAccessLayer.DataTransferObjects
 {
     public class JournalEntryDTO : UserInformationDTO
     {
+        public List<CartItemsDTO> CartItems { get; set; }
+
         public long JournalEntryTransId { get; set; }
 
         public string ReceiptNo { get; set; } 
 
         public string? ChequeNumber { get; set; }
 
-        public double AmountPaid { get; set; }
+        public decimal AmountPaid { get; set; }
 
         public DateTime CreatedDateTime { get; set; }
 
@@ -40,8 +42,8 @@ namespace DataAccessLayer.DataTransferObjects
 
         public int ShopId { get; set; }
 
-        public double AmountReceivedFromCustomer { get; set; }
+        public decimal AmountReceivedFromCustomer { get; set; }
 
-        public double CashBack { get; set; }
+        public decimal CashBack { get; set; }
     }
 }
