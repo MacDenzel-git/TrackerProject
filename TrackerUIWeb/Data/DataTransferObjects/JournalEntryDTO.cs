@@ -36,7 +36,7 @@ namespace TrackerUIWeb.Data.DataTransferObjects
 
         public DateTime? DateModified { get; set; }
 
-        public int? ShopId { get; set; }
+        public int ShopId { get; set; }
 
         public decimal AmountReceivedFromCustomer { get; set; }
 

@@ -17,6 +17,24 @@ namespace TrackerAPI.Controllers
             _posService = posService;
         }
 
+        [HttpGet("GetReceiptDetails")]
+        public async Task<IActionResult> GetReceiptDetails(string receipt)
+        {
+            var product = await _posService.GetReceiptDetails(receipt);
+            if (product == null)
+            {
+                return Ok(new OutputHandler
+                {
+                    Message = "Product Not Found"
+                });
+            }
+            else
+            {
+                return Ok(product);
+            }
+        }
+
+
         [HttpPost("SearchProduct")]
         public async Task<IActionResult> SearchProduct(ProductSearchDTO productSearchParam)
         {
@@ -38,31 +56,48 @@ namespace TrackerAPI.Controllers
         [HttpPost("NewTransaction")]
         public async Task<IActionResult> NewTransaction(JournalEntryDTO jentryDTO)
         {
-            var product = await _posService.NewTransaction(jentryDTO);
-            if (product == null)
+            try
             {
-                return Ok(new OutputHandler
+                var product = await _posService.NewTransaction(jentryDTO);
+                if (product == null)
                 {
-                    Message = "Product Not Found"
-                });
+                    return Ok(new OutputHandler
+                    {
+                        Message = "Product Not Found"
+                    });
+                }
+                else
+                {
+                    return Ok(product);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return Ok(product);
+
+                return BadRequest(new OutputHandler { IsErrorOccured =  true, Message = ex.Message});
             }
         }
         
-        [HttpPost("Payment")]
+        [HttpPut("Payment")]
         public async Task<IActionResult> Payment(JournalEntryDTO jentryDTO)
         {
-            var output = await _posService.Payment(jentryDTO);
-            if (output == null)
+            try
             {
-                return Ok(output);
+                var output = await _posService.Payment(jentryDTO);
+                if (output == null)
+                {
+                    return Ok(output);
+                }
+                else
+                {
+                    return Ok(output);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return Ok(output);
+
+                return BadRequest(new OutputHandler { IsErrorOccured = true, Message = ex.Message });
+                
             }
         }
     }

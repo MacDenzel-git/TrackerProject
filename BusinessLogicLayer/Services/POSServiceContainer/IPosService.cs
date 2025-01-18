@@ -13,6 +13,8 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
        Task<ShopProductDTO> GetProduct(ProductSearchDTO productSearchParams);
        Task<OutputHandler> Payment(JournalEntryDTO jounalEntry);
        Task<OutputHandler> NewTransaction(JournalEntryDTO jounalEntry);
-        
+        Task<OutputHandler> RemoveFromCart(string Receipt, string ProductId); //before checkout
+        Task<OutputHandler> ReturnProduct(string Receipt, string Product); //after checkout - not to be used, For Super Admin
+        Task<JournalEntryDTO> GetReceiptDetails(string receipt);
     }
 }

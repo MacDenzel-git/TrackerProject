@@ -11,9 +11,16 @@ public partial class CartItem
 
     public int ProductId { get; set; }
 
-    public int Quanity { get; set; }
+    public int Quantity { get; set; }
 
-    public double Price { get; set; }
+    public decimal Price { get; set; }
 
     public string? ReceiptNumber { get; set; }
-}
+
+    public bool? Iscomplete { get; set; }
+
+    public DateTime? DateCreated { get; set; }
+
+    public int? ShopId { get; set; }
+
+ }

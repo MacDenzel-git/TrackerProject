@@ -42,6 +42,7 @@ namespace TrackerAPI
             service.AddScoped<GenericRepository<Supplier>>();
             service.AddScoped<GenericRepository<TransactionType>>();
             service.AddScoped<GenericRepository<JournalEntry>>();
+            service.AddScoped<GenericRepository<CartItem>>();
             return service;
         }
     }

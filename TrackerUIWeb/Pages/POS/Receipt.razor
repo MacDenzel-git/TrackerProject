@@ -1,0 +1,32 @@
+﻿@page "/print-section"
+@inject IJSRuntime JSRuntime
+
+<h3>Print Specific Section Example</h3>
+
+<button @onclick="PrintSection">Print Section</button>
+
+<div id="printSection">
+    <h4>This is the content you want to print.</h4>
+    <p>
+        You can print only this section by clicking the button above.
+    </p>
+</div>
+
+@code {
+    private async Task PrintSection()
+    {
+        // Trigger the JavaScript function to print the section with the given ID
+        await JSRuntime.InvokeVoidAsync("printSection", "printSection");
+    }
+}
+<script>
+    function printSection(sectionId) {
+        var printContent = document.getElementById(sectionId);
+        var windowToPrint = window.open('', '', 'height=600,width=800');
+        windowToPrint.document.write('<html><head><title>Print</title></head><body>');
+        windowToPrint.document.write(printContent.innerHTML);
+        windowToPrint.document.write('</body></html>');
+        windowToPrint.document.close();
+        windowToPrint.print();
+    }
+</script>

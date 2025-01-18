@@ -11,7 +11,7 @@ public partial class JournalEntry
 
     public string? ChequeNumber { get; set; }
 
-    public double AmountPaid { get; set; }
+    public decimal AmountPaid { get; set; }
 
     public DateTime CreatedDateTime { get; set; }
 
@@ -37,7 +37,7 @@ public partial class JournalEntry
 
     public int? ShopId { get; set; }
 
-    public double AmountReceivedFromCustomer { get; set; }
+    public decimal AmountReceivedFromCustomer { get; set; }
 
-    public double CashBack { get; set; }
+    public decimal CashBack { get; set; }
 }

@@ -36,7 +36,7 @@
 
 <div class="row">
     <div class="col-4">
-        <Button class="p-3 btn btn-sm btn-danger" Color="ButtonColor.Success" @onclick="NewTransaction">
+        <Button disabled="@IsDisabled" class="p-3 btn btn-sm btn-danger" Color="ButtonColor.Success" @onclick="NewTransaction">
             New
         </Button>
     </div>
@@ -169,7 +169,7 @@
     <div class="col-4">
         <div class="row">
 
-            <div class="col-6 fw-bold"><p> Total: @Total</p></div>
+
         </div>
     </div>
 </div>
@@ -285,6 +285,7 @@
     private JournalEntryDTO JournalEntry = new JournalEntryDTO();
     private List<CartItemsDTO> CartItems = new List<CartItemsDTO>();
 
+    private bool IsDisabled = false;
     private string Action = "";
     string Role = "";
     private int SupplierId { get; set; }
@@ -322,7 +323,9 @@
 
     protected async Task<OutputHandler> NewTransaction()
     {
-
+        if(CartItems.Count()>0){
+            return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Please Clear Cart First or checkout items" };
+        }
         JournalEntry.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
         JournalEntry.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
         ShopId = await sessionStorage.GetItemAsync<int>("shopId");
@@ -343,8 +346,8 @@
                 Revreq = "0",
 
                 CreatedDateTime = DateTime.Now,
-                ProcessDateTime = DateTime.Now
-
+                ProcessDateTime = DateTime.Now,
+                CartItems = new List<CartItemsDTO>{}
                 };
         OutputHandler = await httpHandler.Create<JournalEntryDTO>("POS/NewTransaction", JournalEntry);
 
@@ -372,22 +375,26 @@
         JournalEntry.CartItems = CartItems;
         JournalEntry.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
         JournalEntry.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
-        JournalEntry.ShopId = await sessionStorage.GetItemAsync<int>("ShopId");
+
         JournalEntry.PayMode = Paymode;
         JournalEntry.AmountPaid= Payment.AmountExpected;
         JournalEntry.AmountReceivedFromCustomer = Payment.AmountPaid;
-        JournalEntry.CashBack = Payment.CashBack;
-
-        OutputHandler = await httpHandler.Update<JournalEntryDTO>("POS/PAYMENT", JournalEntry);
+        JournalEntry.CashBack = JournalEntry.AmountReceivedFromCustomer - Payment.AmountExpected;
+        JournalEntry.ReceiptNo = ShopReceipt;
+        JournalEntry.ChequeNumber = "";
+        OutputHandler = await httpHandler.Update<JournalEntryDTO>("POS/Payment", JournalEntry);
 
         if (OutputHandler.IsErrorOccured == false)
         {
-           
+            OnHideCashModalClick();
+            
+             NavigationManager.NavigateTo($"/PrintReceipt/{ShopReceipt}",true);
+             NavigationManager.NavigateTo("/POS",true);
         }
         else
         {
-            OnProccessCompleteNotify();
-//print Receipt 
+            OnProccessCompleteNotify(); 
+            //print Receipt 
         }
 
 
@@ -402,13 +409,34 @@
         Supplier.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
         Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
         ProductSearch.ShopId = await sessionStorage.GetItemAsync<int>("shopId");
+        ProductSearch.ReceiptNumber = ShopReceipt;
 
+        if (string.IsNullOrEmpty(ProductSearch.ProductCode))
+        {
+            return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Enter Product Code" };
+        }
+
+
+        if (ProductSearch.Quantity < 1)
+        {
+            return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Add Quantity" };
+        }
         OutputHandler = new OutputHandler
                 {
                     IsErrorOccured = false,
                     Message = ""
                 };
         Product = await httpHandler.GetSingle<ShopProductDTO>("POS/SearchProduct", ProductSearch);
+        if (Product is null)
+        {
+            OutputHandler = new OutputHandler
+                {
+                    IsErrorOccured = true,
+                    Message = "Quantity Low"
+                };
+
+            return OutputHandler;
+        }
         if (Product.QuantityInStock < ProductSearch.Quantity)
         {
             OutputHandler = new OutputHandler
@@ -426,8 +454,11 @@
                         JournalEntryId = Product.JournalEntryId,
                         Price = Product.Price * ProductSearch.Quantity,
                         Quantity = ProductSearch.Quantity,
-                        ProductName = Product.ProductName
+                        ProductName = Product.ProductName,
+                        ReceiptNumber=ShopReceipt
                     });
+
+            IsDisabled = true;
         }
         if (OutputHandler.IsErrorOccured == false)
         {
@@ -573,12 +604,12 @@
     {
         await modal.HideAsync();
     }
-
-   
     private async Task OnHideCashModalClick()
     {
         await cashModal.HideAsync();
     }
+   
+   
 
     
 

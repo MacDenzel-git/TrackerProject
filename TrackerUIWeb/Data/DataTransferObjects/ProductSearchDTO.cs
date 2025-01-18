@@ -12,5 +12,7 @@ namespace TrackerUIWeb.Data.DataTransferObjects
         public int ShopId { get; set; }
         public int Quantity { get; set; }
         public int Discount { get; set; }
+        public string? ReceiptNumber { get; set; }
+
     }
 }

@@ -10,6 +10,8 @@ namespace DataAccessLayer.DataTransferObjects
     {
         public int ProductCode { get; set; }
         public int Quantity { get; set; }
+        public string ReceiptNumber { get; set; }
+
         public int Discount { get; set; }
         public int ShopId { get; set; }
 

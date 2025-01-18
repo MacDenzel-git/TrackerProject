@@ -2,6 +2,8 @@ using DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TrackerAPI;
+using BusinessLogicLayer.Logging;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,14 @@ options => {
     options.UseSqlServer(configuration.GetConnectionString("ConnectionStringLocal"));
     options.EnableSensitiveDataLogging();
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
+builder.Host.ConfigureLogging((context, logging) =>
+{
+    logging.AddRoundCodeFileLogger(options =>
+    {
+        context.Configuration.GetSection("RoundTheCodeFile").GetSection("Options").Bind(options);
+    });
+
 });
 
 

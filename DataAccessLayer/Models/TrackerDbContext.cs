@@ -51,12 +51,12 @@ public partial class TrackerDbContext : DbContext
     {
         modelBuilder.Entity<CartItem>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(e => e.Id).HasName("PK_CartItems_1");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("ID");
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.DateCreated).HasColumnType("datetime");
             entity.Property(e => e.ReceiptNumber).HasMaxLength(500);
+             
         });
 
         modelBuilder.Entity<Category>(entity =>
@@ -127,6 +127,9 @@ public partial class TrackerDbContext : DbContext
         {
             entity.HasKey(e => e.JournalEntryTransId).HasName("PK_ReceiptNo");
 
+            entity.Property(e => e.AmountPaid).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.AmountReceivedFromCustomer).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.CashBack).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ChequeNumber).HasMaxLength(50);
             entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
             entity.Property(e => e.DateModified).HasColumnType("datetime");
