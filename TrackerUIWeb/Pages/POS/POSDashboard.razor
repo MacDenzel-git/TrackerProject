@@ -152,21 +152,21 @@
 
         }  
     </div>
-    <div class="col-4">@if (CheckoutOptionIsActive)
+    <div class="col-6">@if (CheckoutOptionIsActive)
         {
 
 
             <button class="p-3  btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
 
 
-            <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> CASH </button>
+            <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> VISA </button>
 
 
-            <button class="p-3  btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> CASH </button>
+            <button class="p-3  btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> MOBILE MONEY </button>
 
 
         }</div>
-    <div class="col-4">
+    <div class="col-2">
         <div class="row">
 
 
@@ -176,29 +176,6 @@
 
 
 
-@* 
-
-@if (CheckoutOptionIsActive)
-{
-    <div class="row">
-        <div class="col-4">
-            <div class="row">
-
-                <div class="col-4">
-                    <button class="p-3 btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
-                </div>
-                <div class="col-4">
-                    <button class="p-3 btn btn-sm btn-warning" @onclick="()=>Visa()"> CASH </button>
-
-                </div>
-                <div class="col-4">
-                    <button class="p-3 btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> CASH </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-} *@
 
 
 @* PAYMODE MODALS *@
@@ -235,23 +212,8 @@
                             <label for="exampleFormControlInput1">   Amount Paid</label>
                             <InputNumber class="form-control" @bind-Value="Payment.AmountPaid"></InputNumber>
                         </div>
-                        <Button  Class="p-2 m-3" Color="ButtonColor.Primary" @onclick="MakePayment"  >Pay</Button>
-                        <div class="form-group">
-                            <label for="exampleFormControlInput1">    Change/Cashback</label>
-                            <InputNumber class="form-control" readOnly="true" @bind-Value="Payment.CashBack"></InputNumber>
-                        </div>
-                        @*  <div class="mb-3 col-md-3">
-                            <label for="Name" class="form-label">Categories</label>
-                            <select required for="CategoryId" class="form-control" @bind="@Product.CategoryId">
-                                @foreach (var item in CategoryList.OrderByDescending(x => x.CategoryName))
-                                {
-                                    <option selected="@item.CategoryId" value="@item.CategoryId">
-                                        @item.CategoryName
-                                    </option>
-                                }
-                            </select>
-                            <ValidationMessage For="@(() => Product.CategoryId)" />
-                        </div> *@
+                        <Button  Class="p-3 mt-2" Color="ButtonColor.Success" @onclick="MakePayment"  >Pay</Button>
+
                     </form>
                 </div>
             </EditForm>
@@ -353,6 +315,7 @@
 
         if (OutputHandler.IsErrorOccured == false)
         {
+            ProductSearch.Quantity = 1;
             ShopReceipt = OutputHandler.Result.ToString();
             OnProccessCompleteNotify();
             IsSearchFormActive = true;
@@ -383,18 +346,18 @@
         JournalEntry.ReceiptNo = ShopReceipt;
         JournalEntry.ChequeNumber = "";
         OutputHandler = await httpHandler.Update<JournalEntryDTO>("POS/Payment", JournalEntry);
-
+        @inject IJSRuntime JSRuntime;
         if (OutputHandler.IsErrorOccured == false)
         {
             OnHideCashModalClick();
-            
-             NavigationManager.NavigateTo($"/PrintReceipt/{ShopReceipt}",true);
-             NavigationManager.NavigateTo("/POS",true);
-        }
+            OnProccessCompleteNotify();
+            string url = $"/PrintReceipt/{ShopReceipt}";
+             await JSRuntime.InvokeVoidAsync("open", url, "_blank");                        // await JSRuntime.InvokeAsync<object>("open", "navigate", "_blank");
+              NavigationManager.NavigateTo($"/POS",true);
+         }
         else
         {
-            OnProccessCompleteNotify(); 
-            //print Receipt 
+           return OutputHandler;
         }
 
 
@@ -405,7 +368,11 @@
 
     protected async Task<OutputHandler> SearchProduct()
     {
-
+        OutputHandler = new OutputHandler
+                {
+                    IsErrorOccured = false,
+                    Message = ""
+                };
         Supplier.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
         Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
         ProductSearch.ShopId = await sessionStorage.GetItemAsync<int>("shopId");
@@ -504,6 +471,11 @@
 
     public async void Cash()
     {
+         OutputHandler = new OutputHandler
+                {
+                    IsErrorOccured = false,
+                    Message = ""
+                };
         Paymode = "CASH";
         Payment.AmountExpected = Total;
         OnShowCashModal();
