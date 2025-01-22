@@ -55,8 +55,11 @@ public partial class TrackerDbContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.DateCreated).HasColumnType("datetime");
+            entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ProductName).HasMaxLength(50);
             entity.Property(e => e.ReceiptNumber).HasMaxLength(500);
-             
+            entity.Property(e => e.ReversalDate).HasColumnType("datetime");
+            entity.Property(e => e.ReversedBy).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Category>(entity =>

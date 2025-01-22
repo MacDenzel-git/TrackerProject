@@ -23,4 +23,11 @@ public partial class CartItem
 
     public int? ShopId { get; set; }
 
- }
+    public bool? IsReversed { get; set; }
+
+    public string? ReversedBy { get; set; }
+
+    public DateTime? ReversalDate { get; set; }
+
+    public string? ProductName { get; set; }
+}

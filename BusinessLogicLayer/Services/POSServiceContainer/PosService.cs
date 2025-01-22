@@ -59,7 +59,8 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
                             Quantity = productSearchParams.Quantity,
                             ReceiptNumber = productSearchParams.ReceiptNumber,
                             Iscomplete = false,
-                            ShopId = productSearchParams.ShopId
+                            ShopId = productSearchParams.ShopId,
+                            ProductName = product.ProductName,
                         };
                         var cartItemCreation = await _unityOfWork.CartItemsRepository.Create(cartItem);
                         if (cartItemCreation.IsErrorOccured)
