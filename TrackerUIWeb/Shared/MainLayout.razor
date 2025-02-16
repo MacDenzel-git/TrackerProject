@@ -34,6 +34,7 @@
         await sessionStorage.SetItemAsync("LoggedInUser", "Denzel");
         await sessionStorage.SetItemAsync("Role", "Admin");
         await sessionStorage.SetItemAsync("shopId", 1);
+        await sessionStorage.SetItemAsync("shopName", "Mzuzu Main");
 
         if (navItems is null)
             navItems = GetNavItems();
@@ -47,15 +48,15 @@
         {
             new NavItem { Id = "1", Href = "/Dashboard", IconName = IconName.HouseDoorFill, Text = "Dashboard"},
 
-            new NavItem { Id = "2", IconName = IconName.LayoutSidebarInset, Text = "Stock Management", IconColor = IconColor.Primary },
-            new NavItem { Id = "3", Href = "/Product/ProductConfiguration", IconName = IconName.WindowPlus, Text = "Products", ParentId="2"},
-            new NavItem { Id = "4", Href = "/Stock/StockManagement", IconName = IconName.WindowPlus, Text = "Stock Management", ParentId="2"},
-            new NavItem { Id = "5", Href = "/Shop/ViewShops", IconName = IconName.WindowPlus, Text = "Products", ParentId="2"},
+            // new NavItem { Id = "2", IconName = IconName.LayoutSidebarInset, Text = "Stock Management", IconColor = IconColor.Primary },
+            new NavItem { Id = "3", Href = "/Product/ProductConfiguration", IconName = IconName.WindowPlus, Text = "Products"},
+            new NavItem { Id = "4", Href = "/Stock/StockManagement", IconName = IconName.WindowPlus, Text = "Stock Management"},
+            new NavItem { Id = "5", Href = "/Shop", IconName = IconName.WindowPlus, Text = "Shops", },
 
 
-             new NavItem { Id = "10", Href = "/User/ProfileManagement", IconName = IconName.CheckCircleFill, Text = "Profile Manager", ParentId="4"},
-            new NavItem { Id = "11", Href = "/User/Usermanagemt", IconName = IconName.PersonSquare, Text = "Users", ParentId="4"},
-            // new NavItem { Id = "7", Href = "/sidebar", IconName = IconName.LayoutSidebarInset, Text = "Sidebar", ParentId="4"},
+            //  new NavItem { Id = "10", Href = "/User/ProfileManagement", IconName = IconName.CheckCircleFill, Text = "Profile Manager", ParentId="4"},
+            // new NavItem { Id = "11", Href = "/User/Usermanagemt", IconName = IconName.PersonSquare, Text = "Users", ParentId="4"},
+            // // new NavItem { Id = "7", Href = "/sidebar", IconName = IconName.LayoutSidebarInset, Text = "Sidebar", ParentId="4"},
 
             // new NavItem { Id = "8", IconName = IconName.WindowPlus, Text = "Forms", IconColor = IconColor.Danger },
             // new NavItem { Id = "9", Href = "/autocomplete", IconName = IconName.InputCursorText, Text = "Auto Complete", ParentId="8"},

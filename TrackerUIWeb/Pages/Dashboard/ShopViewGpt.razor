@@ -1,0 +1,552 @@
+﻿@page "/shop/ShopDetails/{shopId:int}"
+
+
+@using AllinOne.DataHandlers
+@using DataAccessLayer.DataTransferObjects
+@using Microsoft.AspNetCore.Components;
+@using TrackerUIWeb.Data.ApiGateway
+@using TrackerUIWeb.Data.DataTransferObjects
+@using TrackerUIWeb.Utilities
+@inherits LayoutComponentBase
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
+@inject NavigationManager NavigationManager
+ @inject HttpHandlerService httpHandler
+
+@inject IUtilService _UtilService;
+
+<div>
+    <Modal @ref="modal"
+    title="Low Stock Details">
+
+        <BodyTemplate>
+
+            @if (!string.IsNullOrEmpty(OutputHandler.Message))
+            {
+                if (OutputHandler.IsErrorOccured)
+                {
+                    <p class="text-danger">@OutputHandler.Message</p>
+                }
+                else
+                {
+                    <p class="text-success">@OutputHandler.Message</p>
+                }
+
+
+            }
+            <div class="tab-pane fade show">
+                <h5 class="mt-4">Products</h5>
+                <table class="table table-striped table-sm align-middle table-bordered">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity In Stock</th>
+                            <th>Reorder Leve</th>
+                            <th>Price</th>
+
+
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @if (LowStockList != null)
+                        {
+
+                            @foreach (var item in LowStockList)
+                            {
+                                <tr>
+
+                                    <td>@item.ProductName</td>
+                                    <td class="text">@item.QuantityInStock</td>
+                                    <td class="text">@item.ReorderLevel</td>
+                                    <td class="text">@item.Price</td>
+
+
+
+                                </tr>
+                            }
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+
+
+        </BodyTemplate>
+        <FooterTemplate>
+
+
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        </FooterTemplate>
+
+    </Modal>
+
+
+    @*     <Button Color="ButtonColor.Primary" @onclick="Create">Add Stock</Button>  
+    <Button Color="ButtonColor.Primary" @onclick="Create">Transfer Stock</Button> *@
+</div>
+
+
+
+
+<div>
+    <Modal @ref="expiredModal"
+    title="Expired Details">
+
+        <BodyTemplate>
+
+            @if (!string.IsNullOrEmpty(OutputHandler.Message))
+            {
+                if (OutputHandler.IsErrorOccured)
+                {
+                    <p class="text-danger">@OutputHandler.Message</p>
+                }
+                else
+                {
+                    <p class="text-success">@OutputHandler.Message</p>
+                }
+
+
+            }
+            <div class="tab-pane fade show ">
+                <h5 class="mt-4">Inventory</h5>
+                <table class="table table-striped table-sm align-middle table-bordered">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                            <th>Order Price</th>
+                            <th>Retail Price</th>
+                            <th>Expiry</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @if (ExpiredList != null)
+                        {
+
+
+                            @foreach (var item in ExpiredList)
+                            {
+                                <tr>
+
+                                    <td class="text">@item.ProductName</td>
+                                    <td class="text">@item.Quantity</td>
+                                    <td class="text">@item.OrderPrice</td>
+                                    <td class="text">@item.RetailPrice</td>
+                                    <td class="text">@item.ProductExpiryDate.Date.</td>
+
+
+                                </tr>
+                            }
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+
+
+        </BodyTemplate>
+        <FooterTemplate>
+
+
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        </FooterTemplate>
+
+    </Modal>
+
+
+    @*     <Button Color="ButtonColor.Primary" @onclick="Create">Add Stock</Button>  
+    <Button Color="ButtonColor.Primary" @onclick="Create">Transfer Stock</Button> *@
+</div>
+
+
+@if (isDataLoaded)
+{
+
+
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm" style="background: linear-gradient(135deg, #28a745, #218838); border-radius: 12px;">
+                    <div class="card-body text-white">
+
+                        <h5>Total Amount</h5>
+                        <h2>@ShopView.TodaySummation</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm" style="background: linear-gradient(135deg, #343a40, #23272b); border-radius: 12px;">
+                    <div class="card-body text-white">
+                        <button class="text-light btn btn-sm btn-danger" @onclick="()=>OpenLowStockDetails()">Low Stock</button>
+
+                        <h2>@ShopView.LowStock</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm" style="background: linear-gradient(135deg, #dc3545, #c82333); border-radius: 12px;">
+                    <div class="card-body text-white">
+                        <button class="text-light btn btn-sm btn-danger" @onclick="()=>GetExpiredInventory()">Expired Items</button>
+
+                        <h2>@ShopView.ExpiredItems  </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-lg p-4" style="border-radius: 12px;">
+            <h3 class="text-center mb-4">@ShopName Shop</h3>
+
+            <ul class="nav nav-tabs" id="shopTabs" role="tablist">
+
+
+                <li @onclick="() => SelectTab(1)" class="@GetTabClass(1) nav-item" role="presentation">
+                    <button class="nav-link active" id="transactions-tab" data-bs-toggle="tab" data-bs-target="#transactions" type="button" role="tab" aria-controls="transactions" aria-selected="false">Transactions</button>
+                </li>
+                <li @onclick="() => SelectTab(2)" class="@GetTabClass(2) nav-item"  role="presentation">
+                    <button class="nav-link " id="shopProducts-tab" data-bs-toggle="tab" data-bs-target="#shopProducts" type="button" role="tab" aria-controls="inventory" aria-selected="true">Products</button>
+                </li>
+                <li @onclick="() => SelectTab(3)" class="@GetTabClass(3) nav-item"  role="presentation">
+                    <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button" role="tab" aria-controls="inventory" aria-selected="true">Inventory</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="shopTabsContent">
+
+                <div class="tab-pane fade active" id="transactions" role="tabpanel" aria-labelledby="transactions-tab">
+                    <h5 class="mt-4">Transactions</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Receipt</th>
+                                <th>Amount Paid</th>
+                                <th>Rev</th>
+                                <th>Transaction Details</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @if (ShopView.Transactions != null)
+                            {
+                                @foreach (var transaction in ShopView.Transactions)
+                                {
+                                    <tr>
+                                        <td>@transaction.ReceiptNo</td>
+                                        <td>@transaction.AmountPaid.ToString("C")</td>
+                                        <td>@transaction.Rev</td>
+                                        <td>@transaction.TranscationDetails</td>
+                                        <td>                        <button class="text-light btn btn-sm btn-danger" @onclick="()=>ReOpenCart(transaction.ReceiptNo)">View Cart</button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade show" id="shopProducts" role="tabpanel" aria-labelledby="shopProducts-tab">
+                    <h5 class="mt-4">Products</h5>
+                    <table class="table table-striped table-sm align-middle table-bordered">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Stock</th>
+                                <th>Reorder Leve</th>
+                                <th>Price</th>
+
+
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @if (ShopView.ProductList != null)
+                            {
+
+                                @foreach (var item in ShopView.ProductList)
+                                {
+                                    <tr>
+
+                                        <td>@item.ProductName</td>
+                                        <td class="text">@item.QuantityInStock</td>
+                                        <td class="text">@item.ReorderLevel</td>
+                                        <td class="text">@item.Price</td>
+
+
+
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+                <div class="tab-pane fade show " id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
+                    <h5 class="mt-4">Inventory</h5>
+                    <table class="table table-striped table-sm align-middle table-bordered">
+                        <thead class="table-success">
+                            <tr>
+                                <th> Type</th>
+                                <th>Product Name</th>
+                                <th>Quantity</th>
+                                <th>To Shop</th>
+                                <th>From</th>
+                                <th>Order Price</th>
+                                <th>Retail Price</th>
+                                <th>Expiry</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @if (ShopView.InventoryTransactionList != null)
+                            {
+
+
+                                @foreach (var item in ShopView.InventoryTransactionList)
+                                {
+                                    <tr>
+
+                                        <td>@item.TransactionType</td>
+                                        <td class="text">@item.ProductName</td>
+                                        <td class="text">@item.Quantity</td>
+                                        <td class="text">@item.ReceivingShop</td>
+                                        <td class="text">@item.SendingShop</td>
+                                        <td class="text">@item.OrderPrice</td>
+                                        <td class="text">@item.RetailPrice</td>
+                                        <td class="text">@item.ProductExpiryDate.Date.</td>
+
+
+                                    </tr>
+                                } 
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+else 
+{
+    <Spinner Type="SpinnerType.Border" Size="SpinnerSize.Small" />
+}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+    }
+
+    .card {
+    background-color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-tabs .nav-link.active {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+    }
+
+    h5 {
+    color: #333;
+    }
+</style>
+
+@code {
+    protected OutputHandler OutputHandler = new();
+    [Parameter]
+    public int ShopId { get; set; }
+
+    private InventoryTransactionDTO InventoryTransaction { get; set; } = new InventoryTransactionDTO();
+    private ShopViewModel ShopView { get; set; } = new ShopViewModel();
+    private IEnumerable<InventoryTransactionDTO> InventoryTransactionList = new List<InventoryTransactionDTO> { };
+    private IEnumerable<InventoryTransactionDTO> ExpiredList = new List<InventoryTransactionDTO> { };
+    private IEnumerable<JournalEntryDTO> Transactions = new List<JournalEntryDTO> { };
+    private IEnumerable<ShopProductDTO> ProductList = new List<ShopProductDTO>();
+    private IEnumerable<ShopProductDTO> LowStockList = new List<ShopProductDTO>();
+    private IEnumerable<ShopDTO> ShopsList = new List<ShopDTO> {};
+    // int ShopId;
+    private bool isDataLoaded = false;
+    string Username = string.Empty;
+    string ShopName = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+
+        await Task.Delay(3000);
+
+        string Role = await sessionStorage.GetItemAsync<string>("Role");
+        Username = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        // ShopId = await sessionStorage.GetItemAsync<int>("shopId");
+        ShopName = await sessionStorage.GetItemAsync<string>("shopName");
+
+
+        //
+        ShopView = await httpHandler.Get<ShopViewModel>($"POS/Dashboard?shopId={ShopId}");
+
+        if (ShopView is null)
+        {
+
+        }else{
+            isDataLoaded = true;
+
+        }
+        //
+
+
+    }
+    private void SelectTab(int tabIndex)
+    {
+        selectedTab = tabIndex;
+        LoadData();
+    } 
+
+    private void ReOpenCart(string receipt)
+    {
+        NavigationManager.NavigateTo($"POS/{receipt}");
+    }
+        private int selectedTab = 1;
+
+    private async Task LoadData()
+    {
+        if ((selectedTab == 1) && (Transactions.Count() == 0))
+        {
+            Transactions = await httpHandler.GetList<JournalEntryDTO>($"POS/GetShopTransactions?shopId={ShopId}");
+        }
+        else if (selectedTab == 2 && ProductList.Count() == 0)
+        {
+            ProductList = await httpHandler.GetList<ShopProductDTO>($"ShopProduct/GetAllShopProducts?shopId={ShopId}");
+        }
+        else if (selectedTab == 3 && InventoryTransactionList.Count() ==0)
+        {
+            InventoryTransactionList = await httpHandler.GetList<InventoryTransactionDTO>("InventoryTransaction/GetAllInventoryTransactions");
+
+            if (InventoryTransactionList is null)
+            {
+
+            }
+            else
+            {
+                InventoryTransactionList = InventoryTransactionList.Where(x => x.DeletedBy != Username && x.ReceivingShop == ShopId.ToString() || x.SendingShop == ShopId.ToString());
+            }
+
+        }
+    }
+    private string GetTabClass(int tabIndex)
+    {
+        return selectedTab == tabIndex ? "active" : "";
+    }
+    private List<InventoryItem> inventory = new List<InventoryItem>
+    {
+        new InventoryItem { Name = "Item A", Quantity = 10 },
+        new InventoryItem { Name = "Item B", Quantity = 5 },
+        new InventoryItem { Name = "Item C", Quantity = 20 }
+    };
+
+    // private List<Transaction> transactions = new List<Transaction>
+    // {
+    //     new Transaction { Date = DateTime.Now.AddDays(-1), ItemName = "Item A", Quantity = 2, Total = 40.00m },
+    //     new Transaction { Date = DateTime.Now.AddDays(-2), ItemName = "Item B", Quantity = 1, Total = 20.00m },
+    //     new Transaction { Date = DateTime.Now.AddDays(-3), ItemName = "Item C", Quantity = 3, Total = 60.00m }
+    // };
+
+    public class InventoryItem
+    {
+        public string Name { get; set; }
+        public int Quantity { get; set; }
+    }
+    public async void OpenLowStockDetails()
+    {
+       
+        LowStockList = await httpHandler.GetList<ShopProductDTO>($"POS/GetLowStockProduct?shopId={ShopId}");
+        // IsCancelRequest = true;
+        OnShowModalClick();
+    }
+    
+    
+    
+    public async void GetExpiredInventory()
+    {
+       
+        ExpiredList = await httpHandler.GetList<InventoryTransactionDTO>($"POS/GetExpiredInventory?shopId={ShopId}");
+        // IsCancelRequest = true;
+        OnShowexpiredModalClick();
+    }
+    public class Transaction
+    {
+        public DateTime Date { get; set; }
+        public string ItemName { get; set; }
+        public int Quantity { get; set; }
+        public decimal Total { get; set; }
+    }
+
+
+
+
+
+
+    private Modal modal = default!;
+    private Modal expiredModal = default!;
+
+    [Inject] ToastService ToastService { get; set; } = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnShowexpiredModalClick()
+    {
+        await expiredModal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+
+    private async Task OnHideexpiredModalClick()
+    {
+        await expiredModal.HideAsync();
+    }
+
+    private void OnModalShowing()
+    {
+        ToastService.Notify(new(ToastType.Primary, $"Event: Showing called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalShown()
+    {
+        ToastService.Notify(new(ToastType.Success, $"Event: Show called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHiding()
+    {
+        ToastService.Notify(new(ToastType.Danger, $"Event: Hiding called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHidden()
+    {
+        ToastService.Notify(new(ToastType.Warning, $"Event: Hide called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnModalHidePrevented()
+    {
+        ToastService.Notify(new(ToastType.Info, $"Event: Hide Prevented called. DateTime: {DateTime.Now}"));
+    }
+
+    private void OnProccessCompleteNotify()
+    {
+        ToastService.Notify(new(ToastType.Info, $"{OutputHandler.Message}"));
+    }
+}

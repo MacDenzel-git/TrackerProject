@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="AllinOne" Version="1.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlserver" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.tools" Version="8.0.10">

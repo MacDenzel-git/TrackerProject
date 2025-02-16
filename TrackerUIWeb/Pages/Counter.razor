@@ -1,18 +1,59 @@
 ﻿@page "/counter"
+@using System.Linq
 
-<PageTitle>Counter</PageTitle>
+<h3>Custom Searchable Dropdown</h3>
 
-<h1>Counter</h1>
+<div class="searchable-dropdown">
+    <!-- Search Input -->
+    <input type="text" @bind="searchTerm" @oninput="OnSearchChanged" class="search-input" placeholder="Search items..." />
 
-<p role="status">Current count: @currentCount</p>
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu">
+        @if (filteredItems.Any())
+        {
+            @foreach (var item in filteredItems)
+            {
+                <button class="dropdown-item" @onclick="() => SelectItem(item)">
+                    @item
+                </button>
+            }
+        }
+        else
+        {
+            <p class="dropdown-item">No results found</p>
+        }
+    </div>
+</div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<p>Selected Item: @selectedItem</p>
 
 @code {
-    private int currentCount = 0;
-
-    private void IncrementCount()
+    private string searchTerm = string.Empty;
+    private string selectedItem;
+    private List<string> items = new List<string>
     {
-        currentCount++;
+        "Apple", "Banana", "Cherry", "Date", "Grape", "Lemon", "Mango", "Orange", "Peach", "Pear"
+    };
+
+    // Filtered items based on the search term
+    private IEnumerable<string> filteredItems => string.IsNullOrEmpty(searchTerm)
+        ? items
+        : items.Where(item => item.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    // Method to handle search input changes
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value.ToString();
+    }
+
+    // Method to handle item selection
+    private void SelectItem(string item)
+    {
+        selectedItem = item;
+        searchTerm = item; // Optionally set the search term to the selected item
     }
 }
+
+<style>
+   
+</style>

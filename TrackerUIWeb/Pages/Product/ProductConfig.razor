@@ -51,14 +51,14 @@
                             <label for="exampleFormControlInput1">   Description</label>
                             <InputText class="form-control" @bind-Value="Product.Description"></InputText>
                         </div>
-                      @*    <div class="form-group">
+                         <div class="form-group">
                             <label for="exampleFormControlInput1">   Quantity In Stock</label>
-                            <InputNumber class="form-control" @bind-Value="Product.QuantityInStock"></InputNumber>
-                        </div> *@
-                       @*  <div class="form-group">
+                            <InputNumber class="form-control" @bind-Value="Product.DiscountQuantity"></InputNumber>
+                        </div>  
+                        <div class="form-group">
                             <label for="exampleFormControlInput1">Price</label>
-                            <InputNumber class="form-control" @bind-Value="Product.Price"></InputNumber>
-                        </div>  *@
+                            <InputNumber class="form-control" @bind-Value="Product.DiscountPercent"></InputNumber>
+                        </div> 
                         @* <div class="form-group">
                             <label for="exampleFormControlInput1">  Reorder Level</label>
                             <InputNumber class="form-control" @bind-Value="Product.ReorderLevel"></InputNumber>
@@ -169,6 +169,8 @@
                         <label for="exampleFormControlInput1">Price</label>
                         <InputNumber class="form-control" @bind-Value="ShopProduct.Price"></InputNumber>
                         </div> 
+
+
                         <div class="form-group">
                         <label for="exampleFormControlInput1">  Reorder Level</label>
                             <InputNumber class="form-control" @bind-Value="ShopProduct.ReorderLevel"></InputNumber>

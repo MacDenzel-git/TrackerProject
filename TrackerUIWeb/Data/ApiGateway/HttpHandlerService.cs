@@ -170,7 +170,7 @@ namespace TrackerUIWeb.Data.ApiGateway
                     var result = await response.Content.ReadAsStringAsync();
                     return JsonConvert.DeserializeObject<OutputHandler>(result);
                 }
-                throw new Exception();
+                throw new Exception(response.ToString());
             }
             catch (Exception ex)
             {

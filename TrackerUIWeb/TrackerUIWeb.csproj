@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Content Remove="Pages\Dashboard\ShopDash.razor" />
+    <Content Remove="Pages\POS\ShopKeeperPage.razor" />
     <Content Remove="Pages\_Layout.cshtml" />
   </ItemGroup>
 
@@ -15,6 +16,7 @@
     <PackageReference Include="allinone" Version="1.0.6" />
     <PackageReference Include="blazor.bootstrap" Version="3.0.0" />
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
+    <PackageReference Include="MudBlazor" Version="8.2.0" />
     <PackageReference Include="newtonsoft.json" Version="13.0.3" />
   </ItemGroup>
 

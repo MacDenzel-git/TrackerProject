@@ -10,12 +10,14 @@
     <PackageReference Include="AllinOne" Version="1.0.6" />
     <PackageReference Include="blazor.bootstrap" Version="3.0.0" />
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlserver" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.tools" Version="8.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MudBlazor" Version="8.2.0" />
     <PackageReference Include="newtonsoft.json" Version="13.0.3" />
   </ItemGroup>
 

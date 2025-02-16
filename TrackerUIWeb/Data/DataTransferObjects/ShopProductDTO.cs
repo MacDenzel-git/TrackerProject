@@ -38,5 +38,9 @@ namespace TrackerUIWeb.Data.DataTransferObjects
         public DateTime? DateDeleted { get; set; }
 
         public int JournalEntryId { get; set; }
-    }
+
+        public decimal? CartItemPrice { get; set; }
+        public decimal? CartItemDiscount { get; set; }
+
+     }
 }

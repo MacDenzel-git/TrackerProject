@@ -30,4 +30,7 @@ public partial class CartItem
     public DateTime? ReversalDate { get; set; }
 
     public string? ProductName { get; set; }
+
+    public int? CartItemId { get; set; }
+    public int? Discount { get; set; }
 }

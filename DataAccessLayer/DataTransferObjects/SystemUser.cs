@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.DataTransferObjects
 {
-    public class UserInformationDTO
+    public class SystemUser : IdentityUser
     {
-        public string? LoggedInUsername { get; set; }
-        public string? LoggedInUserRole { get; set; }
+        public int ShopId { get; set; }
     }
 }

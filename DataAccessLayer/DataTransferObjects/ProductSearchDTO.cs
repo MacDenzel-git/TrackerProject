@@ -14,6 +14,9 @@ namespace DataAccessLayer.DataTransferObjects
 
         public int Discount { get; set; }
         public int ShopId { get; set; }
+        public int CartItemId { get; set; }
+
+
 
     }
 }

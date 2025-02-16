@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TrackerAPI;
 using BusinessLogicLayer.Logging;
+using Microsoft.AspNetCore.Identity;
+using DataAccessLayer.DataTransferObjects;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,12 +19,23 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 
+//add Auth
+builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+builder.Services.AddAuthorizationBuilder();
+
+ 
 builder.Services.AddDbContext<TrackerDbContext>(
 options => {
-    options.UseSqlServer(configuration.GetConnectionString("ConnectionStringLocal"));
+    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
     options.EnableSensitiveDataLogging();
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
+
+builder.Services.AddIdentityCore<SystemUser>()
+        .AddEntityFrameworkStores<TrackerDbContext>()
+        .AddApiEndpoints();
+
+ 
 builder.Host.ConfigureLogging((context, logging) =>
 {
     logging.AddRoundCodeFileLogger(options =>
@@ -41,7 +54,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.MapIdentityApi<SystemUser>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

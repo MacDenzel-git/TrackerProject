@@ -29,5 +29,9 @@ public partial class Product
 
     public DateTime? DateDeleted { get; set; }
 
+    public int? DiscountPercent { get; set; }
+
+    public int? DiscountQuantity { get; set; }
+
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 }

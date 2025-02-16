@@ -15,6 +15,8 @@ namespace DataAccessLayer.DataTransferObjects
         public string? Description { get; set; }
 
         public int? CategoryId { get; set; }
+        public int? DiscountQuantity { get; set; }
+        public int? DiscountPercent { get; set; }
 
 
         public string? CreatedBy { get; set; }

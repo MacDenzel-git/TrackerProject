@@ -13,7 +13,8 @@ namespace DataAccessLayer.DataTransferObjects
         public string ProductName { get; set; } = null!;
 
         public string? Description { get; set; }
-
+        public int? DiscountQuantity { get; set; }
+        public int? DiscountPercent { get; set; }
         public int? CategoryId { get; set; }
  
        

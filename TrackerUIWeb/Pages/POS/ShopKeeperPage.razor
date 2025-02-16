@@ -1,17 +1,5 @@
 ﻿@page "/POS"
 @page "/POS/{Urlreceipt}"
-
-
-@using AllinOne.DataHandlers
-@using DataAccessLayer.DataTransferObjects
-@using Microsoft.AspNetCore.Components;
-@using TrackerUIWeb.Data.ApiGateway
-@using TrackerUIWeb.Data.DataTransferObjects
-@using TrackerUIWeb.Utilities
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
-@inject NavigationManager NavigationManager;
-@inject HttpHandlerService httpHandler;
-@inject IUtilService _UtilService;
 <style>
     .outer {
     overflow-y: auto;
@@ -34,12 +22,12 @@
     /* Container for the dropdown and input */
     .searchable-dropdown {
     position: relative;
-    width: auto;
+    width: 250px;
     }
 
     /* Input field styling */
     .search-input {
-    width: auto;
+    width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -74,7 +62,6 @@
     border: none;
     text-align: left;
     width: 100%;
-    text-wrap: auto;
     }
 
     .dropdown-item:hover {
@@ -88,6 +75,20 @@
     }
 </style>
 
+@inherits LayoutComponentBase
+@inject HttpHandlerService httpHandler;
+
+@using AllinOne.DataHandlers;
+@using DataAccessLayer.DataTransferObjects;
+@using Microsoft.AspNetCore.Components;
+@using TrackerUIWeb.Data.ApiGateway;
+@using TrackerUIWeb.Data.DataTransferObjects;
+@using TrackerUIWeb.Utilities;
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
+@inject IUtilService _UtilService;
+@inject NavigationManager NavigationManager;
+@inject IJSRuntime JSRuntime;
+
 
 
 
@@ -97,15 +98,29 @@
         <Button disabled="@IsDisabled" class="p-3 btn btn-sm btn-danger" Color="ButtonColor.Success" @onclick="NewTransaction">
             New
         </Button>
-        <button 
-        disabled="@_isLoading"
-        class="mt-2 btn btn-gb btn-primary  @(_isLoading ? "loading" : "")"
-        @onclick="NewTransaction">
-            @NewButtonText
-        </button>
     </div>
     <div class="col-4">
+        <div class="searchable-dropdown">
+            <!-- Search Input -->
+            <input type="text" @bind="searchTerm" @oninput="OnSearchChanged" class="search-input" placeholder="Search items..." />
 
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu">
+                @if (filteredItems.Any())
+                {
+                    @foreach (var item in filteredItems)
+                    {
+                        <button class="dropdown-item" @onclick="() => SelectItem(item.ProductName)">
+                            @item
+                        </button>
+                    }
+                }
+                else
+                {
+                    @* <p class="dropdown-item">No results found</p> *@
+                }
+            </div>
+        </div>
     </div>
     <div class="col-4">
         <div class="row">
@@ -114,14 +129,12 @@
         </div>
     </div>
 </div>
-
-
 @if (IsSearchFormActive)
 {
 
 
 
-    @*  <p>Selected Item: @selectedItem</p> *@
+    <p>Selected Item: @selectedItem</p>
     <EditForm Model="@ProductSearch" OnValidSubmit="SearchProduct">
         <div class="row">
 
@@ -172,117 +185,86 @@
 
 }
 
-<div class="row">
-    <div class="col-3 mt-4">  
-        @if (IsSearchFormActive)
-        {  
-            <div class="searchable-dropdown">
-                <!-- Search Input -->
-                <input type="text" @bind="searchTerm" @oninput="OnSearchChanged" class="search-input" placeholder="Search items..." />
-
-                <!-- Dropdown Menu -->
-                <div class="dropdown-menu">
-                    @if (filteredItems.Any())
-                    {
-                        @foreach (var item in filteredItems)
-                        {
-                            <button class="dropdown-item" @onclick="() => SelectItem(item.ProductID, item.ProductName )">
-                                (@item.ProductID)-@item.ProductName
-                            </button>
-                        }
-                    }
-                    else
-                    {
-                        <Spinner Type="SpinnerType.Border" Size="SpinnerSize.Small" />
-
-                    }
-
-                </div>
-            </div> } </div>
-    <div class="col-9"> <br />
-        <div class="outer">
-            <table class="table table-striped table-sm align-middle table-bordered">
-                <thead class="table-success">
+<br />
+<div class="outer">
+    <table class="table table-striped table-sm align-middle table-bordered">
+        <thead class="table-success">
+            <tr>
+                <th>#</th>
+                <th>Product Code</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (CartItems.Count() > 0)
+            {
+                @foreach (var item in CartItems)
+                {
                     <tr>
-                        <th>#</th>
-                        <th>Product Code</th>
-                        <th>Product Name</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Discount</th>
-                        <th>Action</th>
+
+
+                        <td>@item.CartItemId</td>
+                        <td>@item.ProductId</td>
+                        <td class="text">@item.ProductName</td>
+                        <td class="text">@item.Quantity</td>
+                        <td class="text">@item.Price</td>
+                        <td>
+
+                            <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.CartItemId)"> Delete</button>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @if (CartItems.Count() > 0)
-                    {
-                        @foreach (var item in CartItems)
-                        {
-                            <tr>
+                }   }
 
 
-                                <td>@item.CartItemId</td>
-                                <td>@item.ProductId</td>
-                                <td class="text">@item.ProductName</td>
-                                <td class="text">@item.Quantity</td>
-                                <td class="text">@item.Price</td>
-                                <td class="text">@item.Discount %</td>
-                                <td>
+        </tbody>
 
-                                    <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.CartItemId)"> Delete</button>
-                                </td>
-                            </tr>
-                        }   }
-
-
-                </tbody>
-
-            </table>
-        </div>
-        <table class="table table-striped table-sm align-middle table-bordered">
-            <thead class="">
-                <tr>
-                    <th style="color:white !important">Product Code</th>
-                    <th style="color:white !important">Product Name</th>
-                    <th style="color:black !important">Total</th>
-                    <th style="color:black !important">@Total</th>
-                    <th style="color:white !important">Action</th>
-                </tr>
-            </thead>
-            <tbody>
+    </table>
+</div>
+<table class="table table-striped table-sm align-middle table-bordered">
+    <thead class="">
+        <tr>
+            <th style="color:white !important">Product Code</th>
+            <th style="color:white !important">Product Name</th>
+            <th style="color:black !important">Total</th>
+            <th style="color:black !important">@Total</th>
+            <th style="color:white !important">Action</th>
+        </tr>
+    </thead>
+    <tbody>
 
 
-            </tbody>
+    </tbody>
 
-        </table>
+</table>
+<div class="row">
+    <div class="col-2">
+        @if (IsCheckOutButtonActive)
+        {
+            <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
+
+        }  
+    </div>
+    <div class="col-6">@if (CheckoutOptionIsActive)
+        {
+
+
+            <button class="p-3  btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
+
+
+            <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> VISA </button>
+
+
+            <button class="p-3  btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> MOBILE MONEY </button>
+
+
+        }</div>
+    <div class="col-2">
         <div class="row">
-            <div class="col-2">
-                @if (IsCheckOutButtonActive)
-                {
-                    <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
-
-                }  
-            </div>
-            <div class="col-6">@if (CheckoutOptionIsActive)
-                {
 
 
-                    <button class="p-3  btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
-
-
-                    <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> VISA </button>
-
-
-                    <button class="p-3  btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> MOBILE MONEY </button>
-
-
-                }</div>
-            <div class="col-2">
-                <div class="row">
-
-
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -352,8 +334,10 @@
 
 
 
-@code 
+@code
 {
+
+
     [Parameter] 
     public string Urlreceipt { get; set; } = "NoParamSet";
     private SupplierDTO Supplier { get; set; } = new SupplierDTO();
@@ -362,10 +346,6 @@
     private ShopProductDTO Product { get; set; } = new ShopProductDTO();
     private JournalEntryDTO JournalEntry = new JournalEntryDTO();
     private List<CartItemsDTO> CartItems = new List<CartItemsDTO>();
-
-    // Filtered items based on the search term
-    private IEnumerable<ShopProductDTO> filteredItems => string.IsNullOrEmpty(searchTerm) ? items : items.Where(item => item.ProductName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
-    [Inject] ToastService ToastService { get; set; } = default!;
 
     private bool IsDisabled = false;
     private string Action = "";
@@ -383,53 +363,52 @@
     protected decimal Total = 0;
     string Paymode = "";
     int CartItemId = 0;
-    private List<ShopProductDTO> items = new List<ShopProductDTO>() { };
+     private bool _isLoading = false;
+    private string ButtonText => _isLoading ? "Processing..." : "Search";
+    private string searchTerm = string.Empty;
+    private string selectedItem;
 
+
+    
+    private Modal modal = default!;
+    private Modal cashModal = default!;
+    private IEnumerable<ShopProductDTO> items = new List<ShopProductDTO>(){  };
 
     protected override async Task OnInitializedAsync()
     {
-        _isLoading = true;
 
         Role = await sessionStorage.GetItemAsync<string>("Role");
         ShopId = await sessionStorage.GetItemAsync<int>("shopId");
         string Username = await sessionStorage.GetItemAsync<string>("LoggedInUser");
-        var list  =  await httpHandler.GetList<ShopProductDTO>($"ShopProduct/GetAllShopProducts?shopId={ShopId}");
 
-        foreach (var item in list)
-        {
-            items.Add(item);
-        }
-        if(Urlreceipt != null)
-        {
-            if (Urlreceipt != null)
+         items =  await httpHandler.GetList<ShopProductDTO>($"ShopProduct/GetAllShopProducts?shopId={ShopId}");
+
+            if(Urlreceipt != null)
             {
-                //get cart items by receipt 
-                ShopReceipt = Urlreceipt;
-                var cartItemsbyReceipt = await httpHandler.GetList<CartItemsDTO>($"POS/GetCartItems?receipt={Urlreceipt}");
-                foreach (var item in cartItemsbyReceipt.ToList())
+                if (Urlreceipt != null)
                 {
-                    CartItems.Add(item);
-                    Total += item.Price * item.Quantity;
-                }
-                if (CartItems.Count() > 0)
-                {
-                    IsCheckOutButtonActive = true;
-                }
+                    //get cart items by receipt 
+                    ShopReceipt = Urlreceipt;
+                    var itemsbyReceipt = await httpHandler.GetList<CartItemsDTO>($"POS/GetCartItems?receipt={Urlreceipt}");
+                    foreach (var item in itemsbyReceipt.ToList())
+                    {
+                        CartItems.Add(item);
+                        Total += item.Price * item.Quantity;
+                   }
+                    if (CartItems.Count() > 0)
+                    {
+                        IsCheckOutButtonActive = true;
+                    }
 
-                IsDisabled = true;
+                        IsDisabled = true;
 
-            }
-        }     
-        _isLoading = false;
+                }
+            }     
 
     }
-    private bool _isLoading = false;
-    private string ButtonText =>
-  _isLoading ? "Processing..." : "Search";
-
-
-    private string NewButtonText =>
-    _isLoading ? "Processing..." : "NEW";
+   
+  
+     
     private async Task HandleClick()
     {
         _isLoading = true;
@@ -441,9 +420,8 @@
 
     protected async Task<OutputHandler> NewTransaction()
     {
-        _isLoading = true;
         if(CartItems.Count()>0){
-            return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Please Clear Cart First or checkout items" };
+    return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Please Clear Cart First or checkout items" };
         }
         JournalEntry.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
         JournalEntry.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
@@ -472,18 +450,18 @@
 
         if (OutputHandler.IsErrorOccured == false)
         {
-            ProductSearch.Quantity = 1;
-            ShopReceipt = OutputHandler.Result.ToString();
-            OnProccessCompleteNotify();
-            IsSearchFormActive = true;
+    ProductSearch.Quantity = 1;
+    ShopReceipt = OutputHandler.Result.ToString();
+    OnProccessCompleteNotify();
+    IsSearchFormActive = true;
         }
         else
         {
-            // OnProccessCompleteNotify();
+    // OnProccessCompleteNotify();
         }
 
 
-        _isLoading = false;
+
         return OutputHandler;
 
 
@@ -512,18 +490,17 @@
         JournalEntry.CreatedDateTime = DateTime.Now;
         JournalEntry.ProcessDateTime = DateTime.Now;
         OutputHandler = await httpHandler.Update<JournalEntryDTO>("POS/Payment", JournalEntry);
-        @inject IJSRuntime JSRuntime;
         if (OutputHandler.IsErrorOccured == false)
         {
-            OnHideCashModalClick();
-            OnProccessCompleteNotify();
-            string url = $"/PrintReceipt/{ShopReceipt}";
-            await JSRuntime.InvokeVoidAsync("open", url, "_blank");                        // await JSRuntime.InvokeAsync<object>("open", "navigate", "_blank");
-            NavigationManager.NavigateTo($"/POS",true);
+    OnHideCashModalClick();
+    OnProccessCompleteNotify();
+    string url = $"/PrintReceipt/{ShopReceipt}";
+    await JSRuntime.InvokeVoidAsync("open", url, "_blank");                        // await JSRuntime.InvokeAsync<object>("open", "navigate", "_blank");
+    NavigationManager.NavigateTo($"/POS",true);
         }
         else
         {
-            return OutputHandler;
+    return OutputHandler;
         }
 
 
@@ -548,14 +525,14 @@
         if (string.IsNullOrEmpty(ProductSearch.ProductCode))
         {        _isLoading = false;
 
-            return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Enter Product Code" };
+    return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Enter Product Code" };
         }
 
 
         if (ProductSearch.Quantity < 1)
         {        _isLoading = false;
 
-            return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Add Quantity" };
+    return OutputHandler = new OutputHandler { IsErrorOccured = true, Message = "Add Quantity" };
         }
         OutputHandler = new OutputHandler
                 {
@@ -570,17 +547,17 @@
         Product = await httpHandler.GetSingle<ShopProductDTO>("POS/SearchProduct", ProductSearch);
         if (Product is null)
         {
-            OutputHandler = new OutputHandler
+    OutputHandler = new OutputHandler
                 {
                     IsErrorOccured = true,
                     Message = "Quantity Low"
                 };
 
-            return OutputHandler;
+    return OutputHandler;
         }
         if (Product.QuantityInStock < ProductSearch.Quantity)
         {
-            OutputHandler = new OutputHandler
+    OutputHandler = new OutputHandler
                 {
                     IsErrorOccured = true,
                     Message = "Quantity Low"
@@ -588,33 +565,33 @@
         }else
         {
 
-            Total += Convert.ToDecimal( Product.CartItemPrice);
-            CartItems.Add(
-                new CartItemsDTO
+    Total += Product.Price * ProductSearch.Quantity;
+    CartItems.Add(
+        new CartItemsDTO
                     {
                         ProductId = Product.ProductID,
                         JournalEntryId = Product.JournalEntryId,
-                        Price = Convert.ToDecimal( Product.CartItemPrice),
+                        Price = Product.Price * ProductSearch.Quantity,
                         Quantity = ProductSearch.Quantity,
                         ProductName = Product.ProductName,
                         ReceiptNumber=ShopReceipt,
                         CartItemId = CartItemId
                     });
 
-            IsDisabled = true;
+    IsDisabled = true;
         }
         if (OutputHandler.IsErrorOccured == false)
         {
-            ///added notificaation
+    ///added notificaation
         }
         else
         {
-            OnProccessCompleteNotify();
+    OnProccessCompleteNotify();
         }
 
         if (CartItems.Count() > 0)
         {
-            IsCheckOutButtonActive = true;
+    IsCheckOutButtonActive = true;
         }
 
         _isLoading = false;
@@ -670,50 +647,16 @@
         OnShowCashModal();
     }
 
-
-
-    protected async Task RequestDelete()
-    {
-        Supplier.IsDeleted = true;
-        Supplier.DeletedBy = await sessionStorage.GetItemAsync<string>("LoggedInUser");
-        Supplier.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
-        Supplier.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
-        //Supplier.
-        // Supplier.DeletedBy = await sessionStorage.GetItemAsync<string>("MachineName");
-        OutputHandler = await httpHandler.Delete<SupplierDTO>("Supplier/DeleteRequest", Supplier);
-        if (OutputHandler.IsErrorOccured == false)
-        {
-            NavigationManager.NavigateTo("/Supplier/SupplierConfiguration", true);
-
-
-            StateHasChanged();
-            OnProccessCompleteNotify();
-            OnHideModalClick();
-        }
-        else
-        {
-            OnProccessCompleteNotify();
-
-        }
-    }
-
-
-
-
-
     protected async Task Delete(int cartItemId)
     {
-
-
-
         CartItemsDTO cartItem = CartItems.Where(x => x.CartItemId == cartItemId).FirstOrDefault();
         if (cartItem != null)
         {
-            cartItem.ShopId = ShopId;
-            cartItem.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+        cartItem.ShopId = ShopId;
+        cartItem.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
 
-            // Supplier.DeletedBy = await sessionStorage.GetItemAsync<string>("MachineName");
-            OutputHandler = await httpHandler.Update<CartItemsDTO>("Pos/RemoveFromCart", cartItem);
+        // Supplier.DeletedBy = await sessionStorage.GetItemAsync<string>("MachineName");
+        OutputHandler = await httpHandler.Update<CartItemsDTO>("Pos/RemoveFromCart", cartItem);
             if (OutputHandler.IsErrorOccured == false)
             {
                 CartItems.Remove(cartItem);
@@ -723,16 +666,15 @@
             else
             {
                 OnProccessCompleteNotify();
-
+        
             }
-        }
 
-        StateHasChanged();
+        }
+                       StateHasChanged();
 
     }
 
-    private Modal modal = default!;
-    private Modal cashModal = default!;
+
 
     private async Task OnShowModalClick()
     {
@@ -757,25 +699,11 @@
     {
         ToastService.Notify(new(ToastType.Info, $"{OutputHandler.Message}"));
     }
-    private string searchTerm = string.Empty;
-    private int selectedItem;
 
-    // Method to handle search input changes
-    private void OnSearchChanged(ChangeEventArgs e)
-    {
-        searchTerm = e.Value.ToString();
-    }
-
-    // Method to handle item selection
-    private void SelectItem(int item, string ProductName)
-    {
-        selectedItem = item;
-        ProductSearch.ProductCode = item.ToString();
-        searchTerm = ProductName;
-    }
     
+
+
+
+
+
 }
-
-
-
-

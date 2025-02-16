@@ -9,7 +9,7 @@ namespace DataAccessLayer.DataTransferObjects
     public class ShopProductDTO : UserInformationDTO
     {
         public int ShopProductID { get; set; }
-
+        public int Discount { get; set; }
         public string ProductName { get; set; } = null!;
 
         public string? Description { get; set; }
@@ -42,6 +42,7 @@ namespace DataAccessLayer.DataTransferObjects
 
         public DateTime? DateDeleted { get; set; }
 
-
+        public decimal? CartItemPrice { get; set; }
+        public decimal? CartItemDiscount { get; set; }
     }
 }
