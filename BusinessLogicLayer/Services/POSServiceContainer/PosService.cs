@@ -213,6 +213,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
                 var payment = await _unityOfWork.JournalEntryRepository.GetSingleItem(x => x.ReceiptNo == jounalEntry.ReceiptNo);
                 payment.PayMode = jounalEntry.PayMode;
                 payment.AmountPaid = jounalEntry.AmountPaid;
+                payment.NumberOfCartItems = jounalEntry.NumberOfCartItems;
                 payment.Rev = "0";
                 payment.Revreq = "0";
                 payment.DrCr = "C";

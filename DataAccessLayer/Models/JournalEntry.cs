@@ -40,4 +40,5 @@ public partial class JournalEntry
     public decimal AmountReceivedFromCustomer { get; set; }
 
     public decimal CashBack { get; set; }
+    public int NumberOfCartItems { get; set; }
 }

@@ -1,8 +1,6 @@
-﻿using DataAccessLayer.DataTransferObjects;
-
-namespace TrackerUIWeb.Data.DataTransferObjects
+﻿namespace TrackerUIWeb.Data.DataTransferObjects
 {
-    public class JournalEntryDTO : UserInformationDTO
+    public class JournalEntryReportDTO
     {
         public List<CartItemsDTO> CartItems { get; set; }
 
@@ -42,6 +40,5 @@ namespace TrackerUIWeb.Data.DataTransferObjects
 
         public decimal CashBack { get; set; }
         public int NumberOfCartItems { get; set; }
-
     }
 }

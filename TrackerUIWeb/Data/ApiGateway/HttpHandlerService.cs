@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using TrackerUIWeb.Data.DataTransferObjects;
+using static TrackerUIWeb.Pages.Login;
 
 namespace TrackerUIWeb.Data.ApiGateway
 {
@@ -52,6 +53,13 @@ namespace TrackerUIWeb.Data.ApiGateway
             try
             {
                 endpoint = $"{_httpClient.BaseAddress}{endpoint}";
+
+                if (typeof(T) == typeof(LoginModel))
+                {
+                    endpoint = endpoint.Replace("api/","");
+                    endpoint = $"{endpoint}?useCookies=false&useSessionCookies=false";
+
+                }
 
                 HttpContent content = new StringContent(JsonConvert.SerializeObject(param), Encoding.UTF8);
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");

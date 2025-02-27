@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using DataAccessLayer.DataTransferObjects;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer.Models;
 
-public partial class TrackerDbContext : DbContext
+public partial class TrackerDbContext : IdentityDbContext<SystemUser>
 {
     public TrackerDbContext()
     {

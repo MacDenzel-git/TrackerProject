@@ -1,6 +1,15 @@
 ﻿@page "/login"
 @using System.ComponentModel.DataAnnotations
-
+@using AllinOne.DataHandlers
+@using DataAccessLayer.DataTransferObjects
+@using Microsoft.AspNetCore.Components;
+@using TrackerUIWeb.Data.ApiGateway
+@using TrackerUIWeb.Data.DataTransferObjects
+@using TrackerUIWeb.Utilities
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
+@inject NavigationManager NavigationManager;
+@inject HttpHandlerService httpHandler;
+@inject IUtilService _UtilService;
 @* Login Page *@
 
 <div class="container d-flex justify-content-center align-items-center vh-100">
@@ -68,10 +77,15 @@
 
 @code {
     private LoginModel loginModel = new LoginModel();
+        protected OutputHandler OutputHandler = new();
 
-    private void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
+
         // Handle login logic here
+
+                OutputHandler = await httpHandler.Create<LoginModel>("login", loginModel);
+
         Console.WriteLine($"Username: {loginModel.Username}, Password: {loginModel.Password}");
     }
 

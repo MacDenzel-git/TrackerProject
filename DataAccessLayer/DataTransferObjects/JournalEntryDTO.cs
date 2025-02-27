@@ -44,6 +44,7 @@ namespace DataAccessLayer.DataTransferObjects
 
         public decimal AmountReceivedFromCustomer { get; set; }
 
+        public int NumberOfCartItems { get; set; }
         public decimal CashBack { get; set; }
     }
 }

@@ -507,7 +507,7 @@
         JournalEntry.ShopId = ShopId;
         JournalEntry.ProcessedStatus = "0";
         JournalEntry.DrCr = "C";
-
+        JournalEntry.NumberOfCartItems = CartItemId;
         JournalEntry.Processedby = JournalEntry.LoggedInUsername;
         JournalEntry.CreatedDateTime = DateTime.Now;
         JournalEntry.ProcessDateTime = DateTime.Now;
@@ -598,7 +598,8 @@
                         Quantity = ProductSearch.Quantity,
                         ProductName = Product.ProductName,
                         ReceiptNumber=ShopReceipt,
-                        CartItemId = CartItemId
+                        CartItemId = CartItemId,
+                        Discount = Convert.ToInt32(Product.CartItemDiscount)
                     });
 
             IsDisabled = true;

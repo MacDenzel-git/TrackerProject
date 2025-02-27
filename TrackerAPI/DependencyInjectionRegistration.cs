@@ -1,4 +1,5 @@
-﻿using BusinessLogicLayer.Services.CategoryServiceContainer;
+﻿using AllinOne.DataHandlers.MailHandler;
+using BusinessLogicLayer.Services.CategoryServiceContainer;
 using BusinessLogicLayer.Services.InventoryTransactionServiceContainer;
 using BusinessLogicLayer.Services.InventoryTransactionsServiceContainer;
 using BusinessLogicLayer.Services.OrderDetailServiceContainer;
@@ -6,6 +7,7 @@ using BusinessLogicLayer.Services.OrderServiceContainer;
 using BusinessLogicLayer.Services.POSServiceContainer;
 using BusinessLogicLayer.Services.ProductServiceContainer;
 using BusinessLogicLayer.Services.ProductsServiceContainer;
+using BusinessLogicLayer.Services.ReportServiceContainer;
 using BusinessLogicLayer.Services.ShopProductServiceContainer;
 using BusinessLogicLayer.Services.ShopServiceContainer;
 using BusinessLogicLayer.Services.SupplierServiceContainer;
@@ -27,6 +29,8 @@ namespace TrackerAPI
             service.AddScoped<ISupplierService, SupplierService>();
              service.AddScoped<IShopService, ShopService>();
              service.AddScoped<IPosService, PosService>();
+             service.AddScoped<IReportService, ReportService>();
+             service.AddScoped<IMailService, MailService>();
             return service;
         }
 
