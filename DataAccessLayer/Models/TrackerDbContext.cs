@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using DataAccessLayer.DataTransferObjects;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer.Models;
 
-public partial class TrackerDbContext : IdentityDbContext<IdentityUser>
+public partial class TrackerDbContext : DbContext
 {
     public TrackerDbContext()
     {
@@ -18,8 +15,6 @@ public partial class TrackerDbContext : IdentityDbContext<IdentityUser>
     {
     }
 
-    
-
     public virtual DbSet<CartItem> CartItems { get; set; }
 
     public virtual DbSet<Category> Categories { get; set; }
@@ -29,6 +24,8 @@ public partial class TrackerDbContext : IdentityDbContext<IdentityUser>
     public virtual DbSet<District> Districts { get; set; }
 
     public virtual DbSet<InventoryTransaction> InventoryTransactions { get; set; }
+
+    public virtual DbSet<JournalEntriesArchive> JournalEntriesArchives { get; set; }
 
     public virtual DbSet<JournalEntry> JournalEntries { get; set; }
 
@@ -46,7 +43,13 @@ public partial class TrackerDbContext : IdentityDbContext<IdentityUser>
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
+    public virtual DbSet<SystemUser> SystemUsers { get; set; }
+
     public virtual DbSet<TransactionType> TransactionTypes { get; set; }
+
+    public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserRole> UserRoles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -54,16 +57,6 @@ public partial class TrackerDbContext : IdentityDbContext<IdentityUser>
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        //modelBuilder.Entity<SystemUser>(entity =>
-        //{
-        //    entity.Property(e => e.ShopId).HasMaxLength(50);
-
-        //});
-        base.OnModelCreating(modelBuilder);
-
-
- 
-
         modelBuilder.Entity<CartItem>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_CartItems_1");
@@ -143,6 +136,38 @@ public partial class TrackerDbContext : IdentityDbContext<IdentityUser>
                 .HasForeignKey(d => d.ShopProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Inventory__Produ__59FA5E80");
+        });
+
+        modelBuilder.Entity<JournalEntriesArchive>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("JournalEntriesArchive");
+
+            entity.Property(e => e.AmountPaid).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.AmountReceivedFromCustomer).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.CashBack).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ChequeNumber).HasMaxLength(50);
+            entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
+            entity.Property(e => e.DateModified).HasColumnType("datetime");
+            entity.Property(e => e.DrCr)
+                .HasMaxLength(10)
+                .IsFixedLength();
+            entity.Property(e => e.ModifiedBy).HasMaxLength(50);
+            entity.Property(e => e.PayMode).HasMaxLength(50);
+            entity.Property(e => e.ProcessDateTime).HasColumnType("datetime");
+            entity.Property(e => e.ProcessedStatus)
+                .HasMaxLength(10)
+                .IsFixedLength();
+            entity.Property(e => e.ReceiptNo).HasMaxLength(50);
+            entity.Property(e => e.Rev)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Revreq)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
         });
 
         modelBuilder.Entity<JournalEntry>(entity =>
@@ -313,6 +338,15 @@ public partial class TrackerDbContext : IdentityDbContext<IdentityUser>
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<SystemUser>(entity =>
+        {
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Email).HasMaxLength(256);
+            entity.Property(e => e.NormalizedEmail).HasMaxLength(256);
+            entity.Property(e => e.NormalizedUserName).HasMaxLength(256);
+            entity.Property(e => e.UserName).HasMaxLength(256);
+        });
+
         modelBuilder.Entity<TransactionType>(entity =>
         {
             entity.HasKey(e => e.TransactionTypeId).HasName("PK__Transact__20266D0B7AFB765E");
@@ -328,6 +362,21 @@ public partial class TrackerDbContext : IdentityDbContext<IdentityUser>
             entity.Property(e => e.TransactionTypeName)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(e => e.Email).HasMaxLength(256);
+            entity.Property(e => e.NormalizedEmail).HasMaxLength(256);
+            entity.Property(e => e.NormalizedUserName).HasMaxLength(256);
+            entity.Property(e => e.UserName).HasMaxLength(256);
+        });
+
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasKey(e => e.RoleId);
+
+            entity.Property(e => e.RoleDescription).HasMaxLength(50);
         });
 
         OnModelCreatingPartial(modelBuilder);

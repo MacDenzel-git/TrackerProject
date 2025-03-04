@@ -5,7 +5,8 @@ using TrackerAPI;
 using BusinessLogicLayer.Logging;
 using Microsoft.AspNetCore.Identity;
 using DataAccessLayer.DataTransferObjects;
-using System;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.AspNetCore.DataProtection;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,9 +21,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 
-
  
-
+ 
+ 
 builder.Services.AddDbContext<TrackerDbContext>(
 options => {
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
@@ -30,12 +31,13 @@ options => {
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
-builder.Services.AddAuthorization();
+// Register the Data Protection service
+builder.Services.AddDataProtection()
+.PersistKeysToFileSystem(new DirectoryInfo(@"C:\DataProtectionKeys"))  // Optional: Specify where to store keys
+.SetApplicationName("ShopKeeperAgroLight");
 
-builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-    .AddEntityFrameworkStores<TrackerDbContext>();
-
-
+// Register the EncryptionService for dependency injection
+//services.AddScoped<EncryptionService>();
 
 
 builder.Host.ConfigureLogging((context, logging) =>
@@ -59,7 +61,7 @@ if (app.Environment.IsDevelopment())
  app.UseHttpsRedirection();
 
 app.UseAuthorization();
-app.MapIdentityApi<IdentityUser>();
+
 app.MapControllers();
 
 app.Run();

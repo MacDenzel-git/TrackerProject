@@ -1,10 +1,15 @@
+using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
 using TrackerUIWeb;
 using TrackerUIWeb.Data;
 using TrackerUIWeb.Data.ApiGateway;
+using TrackerUIWeb.Data.AuthenticationHandler;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,11 +21,21 @@ builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddServices();
 builder.Services.AddScoped(xp => new HttpClient { BaseAddress = new Uri(builder.Configuration["EndPointUrl"] ?? "http://0.0.0.0") });
- 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+   .AddCookie(options =>
+   {
+       options.Cookie.Name = "Auth_token";
+       options.LoginPath = "/Login";
+       options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
+       options.AccessDeniedPath = "/access-denied";
 
-
-
-
+   });
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddBlazoredLocalStorage();
 
 var app = builder.Build();
 
@@ -35,7 +50,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseRouting();
 
 app.MapBlazorHub();

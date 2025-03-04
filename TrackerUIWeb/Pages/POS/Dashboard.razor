@@ -4,11 +4,11 @@
 
 @page "/"
 @page "/Dashboard"
-
-@page "/center-image-card"
+@* @attribute [Authorize(Roles = "Admin, Superuser")] *@
 
 <!-- Bootstrap CSS -->
- 
+ <AuthorizeView Roles="Admin, Superuser">
+   
 <div class="container vh-100 d-flex justify-content-center align-items-center">
     <div class="card text-center" style="width: 18rem;">
         <img src="/Images/Logo.jpg" class="card-img-top" alt="Centered Image">
@@ -18,13 +18,37 @@
     </div>
 </div>
 
+</AuthorizeView>
+
+
 @code {
  }
 
 <!-- Bootstrap JS and dependencies -->
  
 @code {
-   
+   private string authMessage = "The user is NOT authenticated.";
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                authMessage = $"{user.Identity.Name} is authenticated.";
+            }
+            else    {
+                 NavigationManager.NavigateTo("/login");
+            }
+        }
+    }
+
     public void POS()
     {
          NavigationManager.NavigateTo("/POS");

@@ -1,4 +1,5 @@
 ﻿using AllinOne.DataHandlers.MailHandler;
+using BusinessLogicLayer.Services.AccountServiceContainer;
 using BusinessLogicLayer.Services.CategoryServiceContainer;
 using BusinessLogicLayer.Services.InventoryTransactionServiceContainer;
 using BusinessLogicLayer.Services.InventoryTransactionsServiceContainer;
@@ -20,13 +21,14 @@ namespace TrackerAPI
     {
         public static IServiceCollection AddServices(this IServiceCollection service)
         {
-            service.AddScoped<ICategoryService, CategoryService>();
-            service.AddScoped<IInventoryTransactionService, InventoryTransactionService>();
-            service.AddScoped<IOrderService, OrderService>();
-            service.AddScoped<IOrderDetailService, OrderDetailService>();
-            service.AddScoped<IProductService, ProductService>();
-            service.AddScoped<IShopProductService, ShopProductService>();
-            service.AddScoped<ISupplierService, SupplierService>();
+             service.AddScoped<ICategoryService, CategoryService>();
+             service.AddScoped<IAccountService, AccountService>();
+             service.AddScoped<IInventoryTransactionService, InventoryTransactionService>();
+             service.AddScoped<IOrderService, OrderService>();
+             service.AddScoped<IOrderDetailService, OrderDetailService>();
+             service.AddScoped<IProductService, ProductService>();
+             service.AddScoped<IShopProductService, ShopProductService>();
+             service.AddScoped<ISupplierService, SupplierService>();
              service.AddScoped<IShopService, ShopService>();
              service.AddScoped<IPosService, PosService>();
              service.AddScoped<IReportService, ReportService>();
@@ -37,6 +39,8 @@ namespace TrackerAPI
         public static IServiceCollection AddRepositories(this IServiceCollection service)
         {
             service.AddScoped<GenericRepository<Category>>();
+            service.AddScoped<GenericRepository<UserRole>>();
+            service.AddScoped<GenericRepository<User>>();
             service.AddScoped<GenericRepository<Shop>>();
             service.AddScoped<GenericRepository<InventoryTransaction>>();
             service.AddScoped<GenericRepository<Order>>();
