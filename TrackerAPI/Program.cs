@@ -5,6 +5,7 @@ using TrackerAPI;
 using BusinessLogicLayer.Logging;
 using Microsoft.AspNetCore.Identity;
 using DataAccessLayer.DataTransferObjects;
+using System;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,11 +20,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 
-//add Auth
-builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
-builder.Services.AddAuthorizationBuilder();
 
  
+
 builder.Services.AddDbContext<TrackerDbContext>(
 options => {
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
@@ -31,11 +30,14 @@ options => {
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
-builder.Services.AddIdentityCore<SystemUser>()
-        .AddEntityFrameworkStores<TrackerDbContext>()
-        .AddApiEndpoints();
+builder.Services.AddAuthorization();
 
- 
+builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+    .AddEntityFrameworkStores<TrackerDbContext>();
+
+
+
+
 builder.Host.ConfigureLogging((context, logging) =>
 {
     logging.AddRoundCodeFileLogger(options =>
@@ -54,11 +56,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.MapIdentityApi<SystemUser>();
-app.UseHttpsRedirection();
+ app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.MapIdentityApi<IdentityUser>();
 app.MapControllers();
 
 app.Run();

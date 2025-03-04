@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.DataTransferObjects
 {
-    public class SystemUser : IdentityUser
+    public class SystemUser  
     {
         public int ShopId { get; set; }
     }
