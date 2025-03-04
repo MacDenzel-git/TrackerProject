@@ -119,7 +119,7 @@
             {
                 userName = user.Identity.Name;
                 userRole = user.FindFirst(ClaimTypes.Role)?.Value;
-                NavigationManager.NavigateTo("/POS");
+                NavigationManager.NavigateTo("/Dashboard", true);
 
             }
             else
