@@ -8,7 +8,7 @@ namespace DataAccessLayer.DataTransferObjects
 {
     public class LoginDTO
     {
-
+    
         public string Username { get; set; }
         public string Password { get; set; }
         public int? ShopId { get; set; }
@@ -16,5 +16,5 @@ namespace DataAccessLayer.DataTransferObjects
         public string? ShopName { get; set; }
 
         public int? UserId { get; set; }
-    }
+     }
 }

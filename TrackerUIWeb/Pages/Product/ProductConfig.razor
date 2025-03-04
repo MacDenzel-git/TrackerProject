@@ -309,12 +309,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // bool loggedInUser = await _UtilService.IsUserAuthenticated();
-        //         if (loggedInUser == false)
-        //         {
+        bool loggedInUser = await sessionStorage.GetItemAsync<bool>("IsAuthenticated");
+                if (loggedInUser == false)
+                {
 
-        //             NavigationManager.NavigateTo("/Login");
-        //         }
+                    NavigationManager.NavigateTo("/Login");
+                }
 
         string Role = await sessionStorage.GetItemAsync<string>("Role");
         string Username = await sessionStorage.GetItemAsync<string>("LoggedInUser");

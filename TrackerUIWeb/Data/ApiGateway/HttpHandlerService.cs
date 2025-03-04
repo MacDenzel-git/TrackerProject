@@ -54,12 +54,12 @@ namespace TrackerUIWeb.Data.ApiGateway
             {
                 endpoint = $"{_httpClient.BaseAddress}{endpoint}";
 
-                if (typeof(T) == typeof(LoginModel))
-                {
-                    endpoint = endpoint.Replace("api/","");
-                    endpoint = $"{endpoint}?useCookies=false&useSessionCookies=false";
+                //if (typeof(T) == typeof(LoginModel))
+                //{
+                //    endpoint = endpoint.Replace("api/","");
+                //    endpoint = $"{endpoint}?useCookies=false&useSessionCookies=false";
 
-                }
+                //}
 
                 HttpContent content = new StringContent(JsonConvert.SerializeObject(param), Encoding.UTF8);
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -111,6 +111,29 @@ namespace TrackerUIWeb.Data.ApiGateway
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 var response = await _httpClient.PostAsJsonAsync<ProductSearchDTO>(endpoint, param);
+
+
+                var result = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<T>(result);
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<T> GetSingleItem<T>(string endpoint, T param)
+        {
+            try
+            {
+                endpoint = $"{_httpClient.BaseAddress}{endpoint}";
+
+                HttpContent content = new StringContent(JsonConvert.SerializeObject(param), Encoding.UTF8);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                var response = await _httpClient.PostAsJsonAsync<T>(endpoint, param);
 
 
                 var result = await response.Content.ReadAsStringAsync();

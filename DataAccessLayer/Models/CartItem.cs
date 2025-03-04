@@ -32,5 +32,6 @@ public partial class CartItem
     public string? ProductName { get; set; }
 
     public int? CartItemId { get; set; }
+
     public int? Discount { get; set; }
 }

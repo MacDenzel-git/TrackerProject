@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DataAccessLayer.Models;
 
-public partial class JournalEntry
+public partial class JournalEntriesArchive
 {
     public long JournalEntryTransId { get; set; }
 
@@ -40,6 +40,4 @@ public partial class JournalEntry
     public decimal AmountReceivedFromCustomer { get; set; }
 
     public decimal CashBack { get; set; }
-
-    public int? NumberOfItemsInCart { get; set; }
 }
