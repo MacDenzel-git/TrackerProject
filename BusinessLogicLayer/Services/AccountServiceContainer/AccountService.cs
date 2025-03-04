@@ -147,10 +147,10 @@ namespace BusinessLogicLayer.Services.AccountServiceContainer
                         Role = Role.RoleDescription,
                         ShopName = shop.ShopName,
                         Username = username,
-
+                        StatusMessage = "Success"
                     };
                 }
-                return null;
+                return new LoginDTO { StatusMessage = "Failed"};
             }
 
                      //return new AutoMapper<User,UserDTO>().MapToObject(output);

@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
@@ -35,7 +36,10 @@ namespace TrackerUIWeb.Data.AuthenticationHandler
                 string Username = await _sessionStorage.GetItemAsync<string>("LoggedInUser");
                 string shopName = await _sessionStorage.GetItemAsync<string>("shopName");
 
-
+                if (Username is null)
+                {
+                    return null;
+                }
 
                 var claims = new List<Claim>
             {

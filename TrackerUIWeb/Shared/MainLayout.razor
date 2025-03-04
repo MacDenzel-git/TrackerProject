@@ -8,7 +8,10 @@
 
     <main>
         <div class="bb-top-row px-4 d-flex justify-content-between">
-            <AuthorizeView>
+
+            @if (authenticationState != null) 
+            {
+                    <AuthorizeView>
                 <NotAuthorized>
                     <Button Color="ButtonColor .Primary" @onclick="LogIn"><span class="glyphicon glyphicon-log-in"></span> Login </Button>
                 </NotAuthorized>
@@ -27,7 +30,8 @@
                              DataProvider="SidebarDataProvider" />
                 </Authorized>
 
-            </AuthorizeView>
+                </AuthorizeView>
+            }
         </div>
 
         <article class="content px-4">
@@ -42,12 +46,28 @@
     Sidebar sidebar = default!;
     IEnumerable<NavItem> navItems;
 
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+ 
+
+    private AuthenticationState authenticationState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Ensure the AuthenticationState is initialized before use
+        authenticationState = await AuthenticationStateTask;
+    }
+
+
+
+
     private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
     {
-        await sessionStorage.SetItemAsync("LoggedInUser", "Denzel");
-        await sessionStorage.SetItemAsync("Role", "Admin");
-        await sessionStorage.SetItemAsync("shopId", 1);
-        await sessionStorage.SetItemAsync("shopName", "Mzuzu Main");
+        // await sessionStorage.SetItemAsync("LoggedInUser", "Denzel");
+        // await sessionStorage.SetItemAsync("Role", "Admin");
+        // await sessionStorage.SetItemAsync("shopId", 1);
+        // await sessionStorage.SetItemAsync("shopName", "Mzuzu Main");
 
         if (navItems is null)
             navItems = GetNavItems();

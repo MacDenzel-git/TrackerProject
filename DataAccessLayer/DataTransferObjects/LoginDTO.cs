@@ -14,6 +14,7 @@ namespace DataAccessLayer.DataTransferObjects
         public int? ShopId { get; set; }
         public string? Role { get; set; }
         public string? ShopName { get; set; }
+        public string StatusMessage { get; set; }
 
         public int? UserId { get; set; }
      }

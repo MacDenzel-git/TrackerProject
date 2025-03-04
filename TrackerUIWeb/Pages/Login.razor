@@ -1,4 +1,5 @@
-﻿@page "/login"
+﻿@page "/"
+@page "/login"
 @using System.ComponentModel.DataAnnotations
 @using AllinOne.DataHandlers
 @using DataAccessLayer.DataTransferObjects
@@ -14,7 +15,7 @@
 @inject HttpHandlerService httpHandler;
 @inject IUtilService _UtilService;
 @inject AuthenticationStateProvider AuthenticationStateProvider
- 
+@*  
 <AuthorizeView>
     <Authorized>
         <h3>Welcome, @userName</h3>
@@ -24,7 +25,7 @@
         <p>You are not authorized to view this page.</p>
     </NotAuthorized>
 </AuthorizeView>
-
+ *@
 @* Login Page *@
 
 <div class="container d-flex justify-content-center align-items-center vh-100">
@@ -56,46 +57,45 @@
 
 <style>
     body {
-    background-color: #f8f9fa;
-    font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        font-family: Arial, sans-serif;
     }
 
     .card {
-    background-color: #ffffff;
-    border: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
+        background-color: #007bff;
+        border-color: #007bff;
     }
 
-    .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #004085;
-    }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
 
     label {
-    font-weight: bold;
+        font-weight: bold;
     }
 
     a {
-    color: #007bff;
+        color: #007bff;
     }
 
-    a:hover {
-    color: #0056b3;
-    text-decoration: underline;
-    }
+        a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
 </style>
 
 @code {
     private LoginDTO loginModel = new LoginDTO();
     protected OutputHandler OutputHandler = new();
 
-    [CascadingParameter]
-    public HttpContext? httpContext { get; set; }
+
 
     private async Task<OutputHandler> HandleValidSubmit()
     {
@@ -103,10 +103,9 @@
         // Handle login logic here
 
         LoginDTO loginDetails = await httpHandler.GetSingleItem<LoginDTO>("Account/login", loginModel);
-         
-        if (OutputHandler.IsErrorOccured == false)
+
+        if (loginDetails.StatusMessage.ToLower() == "success")
         {
-            
             await sessionStorage.SetItemAsync("LoggedInUser", loginDetails.Username);
             await sessionStorage.SetItemAsync("Role", loginDetails.Role);
             await sessionStorage.SetItemAsync("shopId", loginDetails.ShopId);
@@ -114,28 +113,33 @@
             await sessionStorage.SetItemAsync("IsAuthenticated", true);
 
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+            var user = authState.User;
 
-        if (user.Identity.IsAuthenticated)
-        {
-            userName = user.Identity.Name;
-            userRole = user.FindFirst(ClaimTypes.Role)?.Value;
-             NavigationManager.NavigateTo("/POS");
+            if (user.Identity.IsAuthenticated)
+            {
+                userName = user.Identity.Name;
+                userRole = user.FindFirst(ClaimTypes.Role)?.Value;
+                NavigationManager.NavigateTo("/POS");
 
-        }
-        else
-        {
-            NavigationManager.NavigateTo("/login");
-        }
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/login");
+            }
 
 
 
-         
+
         }
         else
         {
             sessionStorage.ClearAsync();
-            await sessionStorage.SetItemAsync("IsAuthenticated", false);
+            return new OutputHandler
+                {
+                    IsErrorOccured = true,
+                    Message = "Wrong username or Password",
+
+                };
 
         }
 
@@ -148,10 +152,7 @@
     private string userName;
     private string userRole;
 
-    protected override async Task OnInitializedAsync()
-    {
-        
-    }
+
 
 
 
