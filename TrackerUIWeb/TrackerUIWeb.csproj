@@ -22,4 +22,8 @@
     <PackageReference Include="newtonsoft.json" Version="13.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\Storage\" />
+  </ItemGroup>
+
 </Project>
