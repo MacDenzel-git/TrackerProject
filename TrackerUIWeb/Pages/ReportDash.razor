@@ -1,0 +1,386 @@
+﻿@page "/reportDashboard"
+@using DataAccessLayer.DataTransferObjects
+@using TrackerUIWeb.Data.ApiGateway
+
+<div class="row">
+
+
+    <div class="col-7">
+        <BarChart @ref="barChart" Width="941" Height="470" />
+        <div class="mt-5">
+            <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="async () => await ShowHorizontalBarChartAsync()">Horizontal Bar Chart</Button>
+            <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="async () => await ShowVerticalBarChartAsync()">Vertical Bar Chart</Button>
+        </div>
+    </div>
+    <div class="col-5">
+        <PieChart @ref="pieChart" Width="500" /> 
+    </div>
+</div>
+
+@* <div class="row">
+    <div class="col-4">
+        <PieChart @ref="pieChart" Width="500" /> 
+    </div>
+
+     
+</div> *@
+
+<div class="container vh-10 d-flex justify-content-center align-items-center">
+    <div class="card text-center m-3" style="width: 18rem;">
+
+        <div class="card-body" style="background:green;">
+            <button class="btn btn-warning btn-lg" href="/Reports">View Reports</button>
+        </div>
+    </div>
+</div>
+
+
+
+@inject HttpHandlerService httpHandler;
+
+@code {
+
+    #region PieChart
+
+    private PieChart pieChart = default!;
+    private PieChartOptions pieChartOptions = default!;
+    private ChartData chartData = default!;
+    private string[]? backgroundColors;
+
+    private int datasetsCount = 0;
+    private int dataLabelsCount = 0;
+    SalesBarChartDTO SkChartData = new();
+    SalesPieChartDTO SkPieChartData = new();
+    private Random random = new();
+
+    protected override void OnInitialized()
+    {
+
+
+
+    }
+
+
+    public async Task<SalesBarChartDTO> ConfigureBarChart()
+    {
+        SkChartData = await httpHandler.Get<SalesBarChartDTO>("Report/GetBarChartData");
+        return SkChartData;
+
+    }
+
+    public async Task<SalesBarChartDTO> ConfigurePieChart()
+    {
+        SkPieChartData = await httpHandler.Get<SalesPieChartDTO>("Report/GetPieChartData");
+        return SkChartData;
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (firstRender)
+        {
+            if (SkChartData != null)
+            {
+                SkChartData = await ConfigureBarChart();
+                barChartData = new ChartData { Labels = BarChartGetDefaultDataLabels(12), Datasets = BarChartGetDefaultDataSets(SkChartData.Shops) };
+                barChartOptions = new BarChartOptions { Responsive = true, Interaction = new Interaction { Mode = InteractionMode.Index } };
+
+                StateHasChanged();
+
+                await barChart.InitializeAsync(barChartData, barChartOptions);
+            }
+
+            chartData = new ChartData
+                {
+                    Datasets = new List<IChartDataset>(),
+                    Labels = new List<string>()
+
+
+                };
+
+            var pieChartDataSet = new PieChartDataset() { Data = new List<double?> { }, BackgroundColor = new List<string> { } };
+
+            SkPieChartData = await httpHandler.Get<SalesPieChartDTO>("Report/GetPieChartData");
+            backgroundColors = ColorUtility.CategoricalTwelveColors;
+            var datasets = new List<IChartDataset>();
+            if (SkPieChartData != null)
+            {
+                foreach (var item in SkPieChartData.Sales)
+                {
+                    dataLabelsCount += 1;
+                    chartData.Labels.Add(item.ShopName);
+                    pieChartDataSet.Data.Add(Convert.ToDouble(item.Amount));
+                    pieChartDataSet.BackgroundColor.Add(backgroundColors[dataLabelsCount]);
+                    // datasets.Add(new PieChartDataset
+                    //     {
+                    //         Label = item.ShopName,
+                    //         Data = new List<double?> { Convert.ToDouble(item.Amount) },
+                    //         BackgroundColor = GetRandomBackgroundColors()
+                    //     });
+
+                    // dataLabelsCount += 1;
+                }
+
+                chartData.Datasets.Add(pieChartDataSet);
+              
+                pieChartOptions = new();
+                pieChartOptions.Responsive = true;
+                pieChartOptions.Plugins.Title!.Text = $"{DateTime.Now} - Sales";
+                pieChartOptions.Plugins.Title.Display = true;
+                StateHasChanged();
+                await pieChart.InitializeAsync(chartData, pieChartOptions);
+            }
+
+
+
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+
+
+    #region Data Preparation
+
+    private List<IChartDataset> GetDefaultDataSets(int numberOfDatasets)
+    {
+        var datasets = new List<IChartDataset>();
+
+        for (var index = 0; index < numberOfDatasets; index++)
+        {
+            datasets.Add(GetRandomPieChartDataset());
+        }
+
+        return datasets;
+    }
+
+    private PieChartDataset GetRandomPieChartDataset()
+    {
+        datasetsCount += 1;
+        return new() { Label = $"Team {datasetsCount}", Data = GetRandomData(), BackgroundColor = GetRandomBackgroundColors() };
+    }
+
+    private List<double?> GetRandomData()
+    {
+        var data = new List<double?>();
+        for (var index = 0; index < dataLabelsCount; index++)
+        {
+            data.Add(random.Next(0, 100));
+        }
+
+        return data;
+    }
+
+    private List<string> GetRandomBackgroundColors()
+    {
+        var colors = new List<string>();
+        for (var index = 0; index < dataLabelsCount; index++)
+        {
+            colors.Add(backgroundColors![index]);
+        }
+
+        return colors;
+    }
+
+    private List<string> GetDefaultDataLabels(int numberOfLabels)
+    {
+        var labels = new List<string>();
+        for (var index = 0; index < numberOfLabels; index++)
+        {
+            labels.Add(GetNextDataLabel());
+            dataLabelsCount += 1;
+        }
+
+        return labels;
+    }
+
+    private string GetNextDataLabel() => $"Product {dataLabelsCount + 1}";
+
+    private string GetNextDataBackgrounfColor() => backgroundColors![dataLabelsCount];
+
+    #endregion  Data Preparation
+    #endregion PieChart
+
+
+    #region Barchart
+
+    private BarChart barChart = default!;
+    private BarChartOptions barChartOptions = default!;
+    private ChartData barChartData = default!;
+
+    private int barChartdatasetsCount = 0;
+    private int barChartlabelsCount = 0;
+    private string[] barChartmonths = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+    private Random barChartrandom = new();
+
+
+
+    private async Task BarChartRandomizeAsync()
+    {
+        if (barChartData is null || barChartData.Datasets is null || !barChartData.Datasets.Any()) return;
+
+        var newDatasets = new List<IChartDataset>();
+
+        foreach (var dataset in barChartData.Datasets)
+        {
+            if (dataset is BarChartDataset barChartDataset
+                && barChartDataset is not null
+                && barChartDataset.Data is not null)
+            {
+                var count = barChartDataset.Data.Count;
+
+                var newData = new List<double?>();
+                for (var i = 0; i < count; i++)
+                {
+                    newData.Add(barChartrandom.Next(200));
+                }
+
+                barChartDataset.Data = newData;
+                newDatasets.Add(barChartDataset);
+            }
+        }
+
+        barChartData.Datasets = newDatasets;
+
+        await barChart.UpdateAsync(barChartData, barChartOptions);
+    }
+
+    private async Task BarChartAddDatasetAsync(string branchName)
+    {
+        if (barChartData is null || barChartData.Datasets is null) return;
+
+        if (barChartdatasetsCount >= 12)
+            return;
+
+        var chartDataset = BarChartGetRandomBarChartDataset(branchName);
+        barChartData = await barChart.AddDatasetAsync(barChartData, chartDataset, barChartOptions);
+    }
+
+    private async Task BarChartAddDataAsync()
+    {
+        if (barChartData is null || barChartData.Datasets is null)
+            return;
+
+        if (barChartlabelsCount >= 12)
+            return;
+
+        var data = new List<IChartDatasetData>();
+        foreach (var dataset in barChartData.Datasets)
+        {
+            if (dataset is BarChartDataset barChartDataset)
+                data.Add(new BarChartDatasetData(barChartDataset.Label, barChartrandom.Next(200)));
+        }
+
+        barChartData = await barChart.AddDataAsync(barChartData, GetNextDataLabel(), data);
+    }
+
+    private async Task ShowHorizontalBarChartAsync()
+    {
+        barChartOptions.IndexAxis = "y";
+        await barChart.UpdateAsync(barChartData, barChartOptions);
+    }
+
+    private async Task ShowVerticalBarChartAsync()
+    {
+        barChartOptions.IndexAxis = "x";
+        await barChart.UpdateAsync(barChartData, barChartOptions);
+    }
+
+    #region Data Preparation
+
+    private List<IChartDataset> BarChartGetDefaultDataSets(List<string> branchNames)
+    {
+        var datasets = new List<IChartDataset>();
+
+
+        foreach (var item in branchNames)
+        {
+            datasets.Add(BarChartGetRandomBarChartDataset(item));
+        }
+
+
+
+
+        return datasets;
+    }
+
+    private BarChartDataset BarChartGetRandomBarChartDataset(string branchName)
+    {
+        var c = ColorUtility.CategoricalTwelveColors[barChartdatasetsCount].ToColor();
+
+        barChartdatasetsCount += 1;
+
+        List<double?> doubles = new List<double?> { };
+        foreach (var item in SkChartData.MonthNames)
+        {
+            doubles.Add(GetAmount(branchName, item));
+            // doubles = BarChartGetRandomData(branchName, item);
+        }
+        var dataset = new BarChartDataset()
+            {
+                Label = $"{branchName}",
+                Data = doubles,
+                BackgroundColor = new List<string> { c.ToRgbString() },
+                BorderColor = new List<string> { c.ToRgbString() },
+                BorderWidth = new List<double> { 0 },
+            };
+        return dataset;
+    }
+
+    public double GetAmount(string branchName, string month)
+    {
+        double amount = 0;
+        var decimalAmount = SkChartData.Data.Where(x => x.ShopName == branchName && x.MonthName == month).FirstOrDefault();
+        if (decimalAmount is null)
+        {
+            amount = 0;
+        }
+        else
+        {
+            amount = Convert.ToDouble(decimalAmount.Amount);
+
+        }
+
+        return amount;
+    }
+
+
+
+    private List<double?> BarChartGetRandomData(string branchName, string month)
+    {
+        var data = new List<double?>();
+
+
+        foreach (var item in SkChartData.Data.Where(x => x.ShopName == branchName && x.MonthName == month))
+        {
+            data.Add(Convert.ToDouble(item.Amount));
+        }
+
+
+        return data;
+    }
+
+    private List<string> BarChartGetDefaultDataLabels(int numberOfLabels)
+    {
+        var labels = new List<string>();
+        for (var index = 0; index < numberOfLabels; index++)
+        {
+            labels.Add(BarChartGetNextDataLabel());
+        }
+
+        return labels;
+    }
+
+    private string BarChartGetNextDataLabel()
+    {
+        barChartlabelsCount += 1;
+        return barChartmonths[barChartlabelsCount - 1];
+    }
+
+    #endregion Data Preparation
+
+
+
+
+    #endregion BarChart
+}
