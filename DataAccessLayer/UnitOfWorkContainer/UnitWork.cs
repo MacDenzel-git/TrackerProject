@@ -11,21 +11,24 @@ namespace DataAccessLayer.UnitOfWorkContainer
 
     public class UnityOfWork : IDisposable
     {
-        private TrackerDbContext context = new TrackerDbContext();
+        private readonly TrackerDbContext _context;
         private GenericRepository<InventoryTransaction> inventoryTransactionRepository;
         private GenericRepository<ShopProduct> shopProductRepository;
         private GenericRepository<JournalEntry> journalEntryRepository;
         private GenericRepository<CartItem> cartItemRepository;
        
         private IDbContextTransaction _transaction;
-
+        public UnityOfWork(TrackerDbContext context)
+        {
+            this._context = context;
+        }
         public GenericRepository<InventoryTransaction> InventoryTransactionRepository
         {
             get
             {
                 if (this.inventoryTransactionRepository == null)
                 {
-                    this.inventoryTransactionRepository = new GenericRepository<InventoryTransaction>(context);
+                    this.inventoryTransactionRepository = new GenericRepository<InventoryTransaction>(_context);
                 }
                 return inventoryTransactionRepository;
             }
@@ -37,7 +40,7 @@ namespace DataAccessLayer.UnitOfWorkContainer
             {
                 if (this.journalEntryRepository == null)
                 {
-                    this.journalEntryRepository = new GenericRepository<JournalEntry>(context);
+                    this.journalEntryRepository = new GenericRepository<JournalEntry>(_context);
                 }
                 return journalEntryRepository;
             }
@@ -50,7 +53,7 @@ namespace DataAccessLayer.UnitOfWorkContainer
             {
                 if (this.cartItemRepository == null)
                 {
-                    this.cartItemRepository = new GenericRepository<CartItem>(context);
+                    this.cartItemRepository = new GenericRepository<CartItem>(_context);
                 }
                 return cartItemRepository;
             }
@@ -66,7 +69,7 @@ namespace DataAccessLayer.UnitOfWorkContainer
             {
                 if (this.shopProductRepository == null)
                 {
-                    this.shopProductRepository = new GenericRepository<ShopProduct>(context);
+                    this.shopProductRepository = new GenericRepository<ShopProduct>(_context);
                 }
                 return shopProductRepository;
             }
@@ -79,7 +82,7 @@ namespace DataAccessLayer.UnitOfWorkContainer
 
         public void Save()
         {
-            context.SaveChanges();
+            _context.SaveChanges();
         }
 
         private bool disposed = false;
@@ -97,12 +100,12 @@ namespace DataAccessLayer.UnitOfWorkContainer
         //}
         public void SaveChanges()
         {
-            context.SaveChanges();
+            _context.SaveChanges();
         }
 
         public void BeginTransaction()
         {
-            _transaction = context.Database.BeginTransaction();
+            _transaction = _context.Database.BeginTransaction();
         }
 
         public void CommitTransaction()
@@ -118,7 +121,7 @@ namespace DataAccessLayer.UnitOfWorkContainer
         public void Dispose()
         {
             _transaction?.Dispose();
-            context.Dispose();
+            _context.Dispose();
         }
 
 

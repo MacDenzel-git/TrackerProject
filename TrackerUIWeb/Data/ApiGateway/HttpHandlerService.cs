@@ -28,6 +28,7 @@ namespace TrackerUIWeb.Data.ApiGateway
             return null;
         }
 
+
         public async Task<T> Get<T>(string endpoint)
         {
             try
@@ -47,6 +48,8 @@ namespace TrackerUIWeb.Data.ApiGateway
             }
             return default;
         }
+
+
 
         public async Task<OutputHandler> Create<T>(string endpoint, T param)
         {

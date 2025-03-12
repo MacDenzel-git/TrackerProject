@@ -31,6 +31,19 @@
 <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%; border-radius: 12px;">
         <h3 class="text-center mb-4">Login</h3>
+        @if (!string.IsNullOrEmpty(OutputHandler.Message))
+        {
+            if (OutputHandler.IsErrorOccured)
+            {
+                <p class="text-danger">@OutputHandler.Message</p>
+            }
+            else
+            {
+                <p class="text-success">@OutputHandler.Message</p>
+            }
+
+
+        }
         <EditForm Model="@loginModel" OnValidSubmit="HandleValidSubmit">
             <DataAnnotationsValidator />
 
@@ -103,7 +116,14 @@
         // Handle login logic here
 
         LoginDTO loginDetails = await httpHandler.GetSingleItem<LoginDTO>("Account/login", loginModel);
-
+        if (loginDetails.Username == null)
+        {
+            return OutputHandler = new OutputHandler
+                {
+                    IsErrorOccured = true,
+                    Message = "Wrong Username or Password"
+                };
+        }
         if (loginDetails.StatusMessage.ToLower() == "success")
         {
             await sessionStorage.SetItemAsync("LoggedInUser", loginDetails.Username);
@@ -119,7 +139,7 @@
             {
                 userName = user.Identity.Name;
                 userRole = user.FindFirst(ClaimTypes.Role)?.Value;
-                NavigationManager.NavigateTo("/Dashboard", true);
+                NavigationManager.NavigateTo("/reportDashboard", true);
 
             }
             else

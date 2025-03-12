@@ -22,12 +22,12 @@ namespace BusinessLogicLayer.Services.InventoryTransactionServiceContainer
     {
         private readonly GenericRepository<InventoryTransaction> _inventoryTransaction;
         private readonly IShopProductService _productService;
-        private UnityOfWork _unitOfWork = new UnityOfWork();
-
-        public InventoryTransactionService(GenericRepository<InventoryTransaction> inventoryTransaction, IShopProductService productService)
+        private readonly UnityOfWork _unitOfWork;
+        public InventoryTransactionService(GenericRepository<InventoryTransaction> inventoryTransaction, IShopProductService productService, UnityOfWork unitOfWork)
         {
             _inventoryTransaction = inventoryTransaction;
             _productService = productService;
+            _unitOfWork = unitOfWork;
         }
         public async Task<OutputHandler> InBound(InventoryTransactionDTO inventoryTransactionDTO)
         {

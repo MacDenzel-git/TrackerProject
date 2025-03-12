@@ -147,7 +147,8 @@ namespace BusinessLogicLayer.Services.AccountServiceContainer
                         Role = Role.RoleDescription,
                         ShopName = shop.ShopName,
                         Username = username,
-                        StatusMessage = "Success"
+                        StatusMessage = "Success",
+                        UserId = output.Id
                     };
                 }
                 return new LoginDTO { StatusMessage = "Failed"};

@@ -7,6 +7,7 @@ using DataAccessLayer.GenericRepository;
 using DataAccessLayer.Models;
 using DataAccessLayer.UnitOfWorkContainer;
 using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -31,8 +32,8 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
 
         private readonly GenericRepository<CartItem> _cartService;
         private readonly GenericRepository<InventoryTransaction> _inventoryService;
-        private UnityOfWork _unityOfWork = new UnityOfWork();
-        public PosService(GenericRepository<Product> productService,GenericRepository<InventoryTransaction> inventoryService, TrackerDbContext trackerDbContext, GenericRepository<ShopProduct> ShopProductService, GenericRepository<JournalEntry> jentryService, GenericRepository<Shop> shopService, GenericRepository<CartItem> cartService, ILogger<PosService> logger)
+        private UnityOfWork _unityOfWork;
+        public PosService(GenericRepository<Product> productService, GenericRepository<InventoryTransaction> inventoryService, TrackerDbContext trackerDbContext, GenericRepository<ShopProduct> ShopProductService, GenericRepository<JournalEntry> jentryService, GenericRepository<Shop> shopService, GenericRepository<CartItem> cartService, ILogger<PosService> logger, UnityOfWork unityOfWork)
         {
             _trackerDbContext = trackerDbContext;
             _shopProductService = ShopProductService;
@@ -42,6 +43,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
             _inventoryService = inventoryService;
             _logger = logger;
             _productService = productService;
+            _unityOfWork = unityOfWork;
         }
 
         public async Task<ShopProductDTO> GetProduct(ProductSearchDTO productSearchParams)
@@ -89,24 +91,28 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
                             shopProduct.CartItemPrice = totalPrice;
 
                         }
+                        else
+                        {
+                            shopProduct.CartItemDiscount = 0;
 
+                        }
 
                         //add to cart 
 
                         var cartItem = new CartItem
-                        {
-                            ProductId = productSearchParams.ProductCode,
-                            Price = totalPrice,
-                            Quantity = productSearchParams.Quantity,
-                            ReceiptNumber = productSearchParams.ReceiptNumber,
-                            Iscomplete = false,
-                            ShopId = productSearchParams.ShopId,
-                            ProductName = shopProduct.ProductName,
-                            CartItemId = productSearchParams.CartItemId,
-                            IsReversed = false,
-                            Discount = product.DiscountPercent
+                            {
+                                ProductId = productSearchParams.ProductCode,
+                                Price = totalPrice,
+                                Quantity = productSearchParams.Quantity,
+                                ReceiptNumber = productSearchParams.ReceiptNumber,
+                                Iscomplete = false,
+                                ShopId = productSearchParams.ShopId,
+                                ProductName = shopProduct.ProductName,
+                                CartItemId = productSearchParams.CartItemId,
+                                IsReversed = false,
+                                Discount = product.DiscountPercent
 
-                        };
+                            };
                         var cartItemCreation = await _unityOfWork.CartItemsRepository.Create(cartItem);
                         if (cartItemCreation.IsErrorOccured)
                         {
@@ -124,6 +130,9 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
 
                             throw new Exception("Failed to Update Product Quantity, report issue");
                         }
+
+                         
+
                     }
                 }
 
@@ -132,11 +141,11 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
             }
             catch (Exception ex)
             {
-
+                _unityOfWork.RollbackTransaction();
                 return null;
             }
         }
-
+         
         public async Task<OutputHandler> NewTransaction(JournalEntryDTO jounalEntry)
         {
             var jentry = new JournalEntryDTO
@@ -185,6 +194,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
             //LOG
             try
             {
+                 
                 var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(jounalEntry);
                 _logger.LogInformation(jsonString);
                 _unityOfWork.BeginTransaction();
@@ -192,9 +202,11 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
                 foreach (var item in jounalEntry.CartItems)
                 {
                     //get items in chart and update them
-                    var mapped = await _unityOfWork.CartItemsRepository.GetSingleItem(X => X.ReceiptNumber == jounalEntry.ReceiptNo);
+                    var mapped = await _unityOfWork.CartItemsRepository.GetSingleItem(X => X.ReceiptNumber == jounalEntry.ReceiptNo && X.CartItemId  == item.CartItemId);
                     mapped.Iscomplete = true;
                     mapped.DateCreated = DateTime.Now;
+                    
+
                     var output = await _unityOfWork.CartItemsRepository.Update(mapped);
                     if (output.IsErrorOccured)
                     {
@@ -333,10 +345,12 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
             }
         }
 
-        public async Task<List<JournalEntryDTO>> GetAllTransactions(int shopId)
+        public async Task<IEnumerable<JournalEntryDTO>> GetAllTransactions(int shopId)
         {
-            var transaction = await _jentryService.GetListAsync(x => x.ShopId == shopId);
-            return new AutoMapper<JournalEntry, JournalEntryDTO>().MapToList(transaction).ToList();
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("shopId", shopId);
+            var output = await _jentryService.FromSprocAsync<JournalEntryDTO>("spGetShopTransactions", parameters);
+            return output;
         }
 
         public async Task<ShopViewModel> Dashboard(int shopId)
