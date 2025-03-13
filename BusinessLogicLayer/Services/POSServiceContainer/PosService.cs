@@ -226,6 +226,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
                 payment.CashBack = jounalEntry.CashBack;
                 payment.ChequeNumber = "";
                 payment.Processedby = jounalEntry.LoggedInUsername;
+                payment.NumberOfItemsInCart = jounalEntry.CartItems.Count();
 
                 var paymentResult = await _unityOfWork.JournalEntryRepository.Update(payment);
                 if (paymentResult.IsErrorOccured)

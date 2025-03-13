@@ -1,0 +1,251 @@
+﻿@page "/reports"
+<PageTitle>Index</PageTitle>
+@using AllinOne.DataHandlers;
+@using AllinOne.OpenXMLHandler;
+@using DataAccessLayer.DataTransferObjects;
+@using TrackerUIWeb.Data.ApiGateway
+@using TrackerUIWeb.Data.DataTransferObjects
+ @inject NavigationManager NavigationManager
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+  @inject HttpHandlerService httpHandler
+
+<!-- BREADCRUMB-->
+<section class=" ">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="au-breadcrumb-content">
+                    <div class="au-breadcrumb-left">
+                        <span class="au-breadcrumb-span">You are here:</span>
+                        <ul class="list-unstyled list-inline au-breadcrumb__list">
+                            <li class="list-inline-item active">
+                                <a href="#">Home</a>
+                            </li>
+                            <li class="list-inline-item seprate">
+                                <span>/</span>
+                            </li>
+                            <li class="list-inline-item">Dashboard</li>
+                        </ul>
+                    </div>
+                    @*    <form class="au-form-icon--sm" action="" method="post">
+                    <input class="au-input--w300 au-input--style2" type="text" placeholder="Search for datas &amp; reports...">
+                    <button class="au-btn--submit2" type="submit">
+                    <i class="zmdi zmdi-search"></i>
+                    </button>
+                    </form> *@
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- END BREADCRUMB-->
+ 
+<NavLink class="m-2 btn btn-sm btn-success" @onclick="(()=> Refresh())">
+    <span class="oi oi-reload" aria-hidden="true"></span> Refresh
+</NavLink>
+<p>Bookings Reports</p>
+
+<div class="row">
+
+    <div class="pt-3 col-md-3">
+        <label for="Name" class="form-label"> Rows</label>
+        <select required class="form-control" @onchange="filter">
+            <option selected value="0">
+                Select number of rows
+            </option>
+            @foreach (var filter in Filters)
+            {
+                <option value="@filter">
+                    @filter
+                </option>
+            }
+        </select>
+
+    </div>
+    <div class="col-md-9">
+
+        <EditForm Model="@reporterFilterDTO" OnValidSubmit="GetReport">
+            <DataAnnotationsValidator />
+            <div class="row align-items-center">
+                    <div class="  col-md-3">
+                        <label for="Name" class="form-label">Start Date</label>
+                        <div>
+                        <InputDate class="form-control" @bind-Value="reporterFilterDTO.StartDate" />
+                        </div>
+                    <ValidationMessage For="@(() => reporterFilterDTO.StartDate)" />
+                    </div>
+
+                    <div class="  col-md-3">
+                        <label for="Name" class="form-label">End Date</label>
+                        <div>
+                        <InputDate class="form-control" @bind-Value="reporterFilterDTO.EndDate" />
+                        </div>
+                    <ValidationMessage For="@(() => reporterFilterDTO.EndDate)" />
+                    </div>
+                <div class="col-md-3">
+                    <div class="form-group mt-5">
+                        <button type="submit" class="btn btn-success">Filter</button>
+@*                         <button class="btn btn-dark" @onclick="ExportToExcel">Download Excel</button>
+ *@
+                    </div>
+                </div>
+                  
+                
+
+
+            </div>
+
+
+        </EditForm>
+
+    </div>
+
+</div>
+@if (Transactions == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+
+
+
+    <div class="table-responsive table-responsive-data2">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Shop</th>
+                    <th>Receipt</th>
+                    <th>Date</th>
+                    <th>Payment Type</th>
+                    <th>ProcessedBy</th>
+                     <th>Total items</th>
+                    <th>Amount Reveived</th>
+                    <th>Change</th>
+                     
+                 </tr>
+            </thead>
+            <tbody>
+                @foreach (var transactions in Transactions)
+                {
+                    <tr>
+                        <td>@transactions.ShopName</td>
+                        <td>@transactions.AGROReceipt</td>
+                        <td>@transactions.TransactionDate.ToString("dd-MMM-yy")</td>
+                        <td>@transactions.PaymentType</td>
+                        <td>@transactions.Processedby</td>
+                        <td>@transactions.NumberOfCartItems</td>
+                        <td>@transactions.AmountReceivedFromCustomer</td>
+                        <td>@transactions.Change</td>
+                       
+                    </tr>
+ 
+                }
+                
+               
+               
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    bool isDownloadClicked = false;
+    private IEnumerable<JournalEntryReportDTO> Transactions = new List<JournalEntryReportDTO>();
+     private JournalEntryReportDTO ReportDTO= new JournalEntryReportDTO();
+    private ReporterFilterDTO reporterFilterDTO = new ReporterFilterDTO();
+    private OutputHandler OutputHandler = new OutputHandler();
+    private int NumberOfRecords;
+    private List<int> Filters;
+    protected override async Task OnInitializedAsync()
+    {
+        Filters = new List<int>();
+        Filters.Add(5);
+        Filters.Add(10);
+        Filters.Add(25);
+        Filters.Add(50);        
+        reporterFilterDTO = new ReporterFilterDTO
+            {
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now
+            };
+        Transactions = await httpHandler.GetList<JournalEntryReportDTO>($"Report/GetReportData?shopId=0&start={reporterFilterDTO.StartDate}&end={reporterFilterDTO.EndDate}");
+
+        // Transactions = await service.GetFilteredBookings(reporterFilterDTO.StartDate, reporterFilterDTO.EndDate, true);
+
+    }
+    async Task Refresh()
+    {
+        NavigationManager.NavigateTo("/reports/Bookings", true);
+    }
+    
+
+    async Task filter(ChangeEventArgs e)
+    {
+        NumberOfRecords = Convert.ToInt32(e.Value);
+         Transactions = Transactions.Take(NumberOfRecords);
+    }
+
+
+    async Task GetReport()
+    {
+
+        try
+        {
+            if (!isDownloadClicked)
+            {
+                
+                Transactions = await httpHandler.GetList<JournalEntryReportDTO>($"Report/GetReportData?shopId=0&start={reporterFilterDTO.StartDate}&end={reporterFilterDTO.EndDate}");
+
+            }   
+
+        }
+        catch (Exception ex)
+        {
+
+            OutputHandler = new OutputHandler { Message = ex.Message };
+        }
+        // Booking = new JournalEntryReportDTO
+        //     {
+        //         StartDate = DateTime.Now,
+        //         EndDate = DateTime.Now.AddDays(2)
+        //     };
+
+        StateHasChanged();
+    }
+
+    // async Task ExportToExcel()
+    // {
+
+    //     try
+    //     {
+    //         var output = OpenXMLGenericProcessor<JournalEntryReportDTO>.PrepareDocumentForProcessing(ReportDTO);
+
+    //         //get data 
+    //        // var reportData = await service.GetReportData(Booking.StartDate, Booking.EndDate);
+    //         var reportData = await Reportservice.GetTransactions(Booking.StartDate, Booking.EndDate);
+
+
+    //         var outputFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "BookingReport");
+
+    //         //Filename 
+    //         string filename = "";
+
+    //         OpenXMLGenericProcessor<JournalEntryReportDTO>.CreateExcelFile(reportData.ToList(), outputFolder, output, "BookingReport.xlsx");
+
+
+
+
+    //     }
+    //     catch (Exception ex)
+    //     {
+
+    //         OutputHandler = new OutputHandler { Message = ex.Message };
+    //     }
+         
+
+        
+    // }
+   
+
+}

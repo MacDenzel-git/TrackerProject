@@ -717,6 +717,8 @@
             OutputHandler = await httpHandler.Update<CartItemsDTO>("Pos/RemoveFromCart", cartItem);
             if (OutputHandler.IsErrorOccured == false)
             {
+                  Total = Total - cartItem.Price;
+
                 CartItems.Remove(cartItem);
                 StateHasChanged();
                 OnProccessCompleteNotify();
