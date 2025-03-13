@@ -303,12 +303,20 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
             if (shopId == 0)
             {
                 var output = await _journalEntries.FromSprocAsync<JournalEntryReportDTO>("spGetAllTransactionsForReport", parameters);
+                if (output is null)
+                {
+                    return new List<JournalEntryReportDTO> { };
+                }
                 return output;
             }
             else
             {
                 parameters.Add("shopId", shopId);
                 var output = await _journalEntries.FromSprocAsync<JournalEntryReportDTO>("GetTransactionsForReport", parameters);
+                if (output is null)
+                {
+                    return new List<JournalEntryReportDTO> { };
+                }
                 return output;
             }
 

@@ -1,6 +1,7 @@
 using AllinOne.DataHandlers;
 using BusinessLogicLayer.Services.ReportServiceContainer;
 using Microsoft.AspNetCore.Mvc;
+using TrackerUIWeb.Data.DataTransferObjects;
 
 namespace TrackerAPI.Controllers
 {    
@@ -23,10 +24,7 @@ namespace TrackerAPI.Controllers
             var data = await _reportService.GetReportData(shopId, start.Date, end.Date);
             if (data == null)
             {
-                return Ok(new OutputHandler
-                {
-                    Message = "Something went wrong"
-                });
+                return Ok(data = new List<JournalEntryReportDTO> { } );
             }
             else
             {

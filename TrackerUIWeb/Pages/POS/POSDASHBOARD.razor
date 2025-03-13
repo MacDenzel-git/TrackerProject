@@ -91,29 +91,33 @@
 
 
 
- 
-<div class="row">
-    <div class="col-4">
-        @* <Button disabled="@IsDisabled" class="p-3 btn btn-sm btn-danger" Color="ButtonColor.Success" @onclick="NewTransaction">
+<AuthorizeView Roles="cashier">
+    <Authorized>
+
+        <div class="row">
+            <div class="col-4">
+                @* <Button disabled="@IsDisabled" class="p-3 btn btn-sm btn-danger" Color="ButtonColor.Success" @onclick="NewTransaction">
             New
         </Button> *@
-        <button 
-        disabled="@_isLoading"
+                <button disabled="@_isLoading"
                 class="mt-2 btn btn-bg btn-danger  @(_isLoading ? "loading" : "")"
-        @onclick="NewTransaction">
-            @NewButtonText
-        </button>
-    </div>
-    <div class="col-4">
+                @onclick="NewTransaction">
+                    @NewButtonText
+                </button>
+            </div>
+            <div class="col-4">
+            </div>
+            <div class="col-4">
+                <div class="row">
+                    <div class="col-6 fw-bold"><p> Receipt: @ShopReceipt</p></div>
 
-    </div>
-    <div class="col-4">
-        <div class="row">
-            <div class="col-6 fw-bold"><p> Receipt: @ShopReceipt</p></div>
-
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+
+    </Authorized>
+
+</AuthorizeView>
 
 
 @if (IsSearchFormActive)
@@ -255,35 +259,45 @@
             </tbody>
 
         </table>
-        <div class="row">
-            <div class="col-2">
-                @if (IsCheckOutButtonActive)
-                {
-                    <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
-
-                }  
-            </div>
-            <div class="col-6">@if (CheckoutOptionIsActive)
-                {
 
 
-                    <button class="p-3  btn btn-sm btn-success" @onclick="()=>Cash()"> CASH </button>
+        <AuthorizeView Roles="cashier">
+            <Authorized>
 
-
-                    <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> VISA </button>
-
-
-                    <button class="p-3  btn btn-sm btn-primary" @onclick="()=>MobileMoney()"> MOBILE MONEY </button>
-
-
-                }</div>
-            <div class="col-2">
                 <div class="row">
+                    <div class="col-2">
+                        @if (IsCheckOutButtonActive)
+                        {
+                            <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
+
+                        }
+                    </div>
+                    <div class="col-6">
+                        @if (CheckoutOptionIsActive)
+                        {
 
 
+                            <button class="p-3  btn btn-sm btn-primary" @onclick="()=>Cash()"> CASH </button>
+
+
+                            <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> VISA </button>
+
+
+                            <button class="p-3  btn btn-sm btn-danger" @onclick="()=>AirtelMoney()"> AIRTEL MONEY </button>
+                            <button class="p-3  btn btn-sm btn-success" @onclick="()=>TNMMPAMBA()"> TNM MPAMBA </button>
+
+
+                        }
+                    </div>
+                    <div class="col-2">
+                        <div class="row">
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </Authorized>
+
+        </AuthorizeView>
+
     </div>
 </div>
 
@@ -314,6 +328,7 @@
 
             }
             <EditForm Model="@Payment" OnValidSubmit="MakePayment">
+                <h5>@Paymode</h5>
 
                 <div class="row">
                     <form>
@@ -325,6 +340,7 @@
                             <label for="exampleFormControlInput1">   Amount Paid</label>
                             <InputNumber class="form-control" @bind-Value="Payment.AmountPaid"></InputNumber>
                         </div>
+
                         <Button  Class="p-3 mt-2" Color="ButtonColor.Success" @onclick="MakePayment"  >Pay</Button>
 
                     </form>
@@ -348,6 +364,64 @@
 @* CASH END *@
 
 
+@* Channels MODALS *@
+
+<div>
+    <Modal @ref="channelsModal"
+    title=@Title>
+
+        <BodyTemplate>
+
+            @if (!string.IsNullOrEmpty(OutputHandler.Message))
+            {
+                if (OutputHandler.IsErrorOccured)
+                {
+                    <p class="text-danger">@OutputHandler.Message</p>
+                }
+                else
+                {
+                    <p class="text-success">@OutputHandler.Message</p>
+                }
+
+
+            }
+            <h5>@Paymode</h5>
+            <EditForm Model="@Payment" OnValidSubmit="MakePayment">
+
+                <div class="row">
+                    <form>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">    Total</label>
+                            <InputNumber class="form-control" readOnly="true" @bind-Value="Payment.AmountExpected"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">   Amount Paid</label>
+                            <InputNumber class="form-control" @bind-Value="Payment.AmountPaid"></InputNumber>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1"> Mobile Number/Card Number </label>
+                            <InputText class="form-control" @bind-Value="Payment.AssociatedAccount"></InputText>
+                        </div>
+                        <Button Class="p-3 mt-2" Color="ButtonColor.Success" @onclick="MakePayment">Pay</Button>
+
+                    </form>
+                </div>
+            </EditForm>
+
+
+        </BodyTemplate>
+        <FooterTemplate>
+
+
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideChannelsModalClick">Close</Button>
+        </FooterTemplate>
+
+    </Modal>
+
+
+
+
+</div>
 
 
 
@@ -409,7 +483,7 @@
                 foreach (var item in cartItemsbyReceipt.ToList())
                 {
                     CartItems.Add(item);
-                    Total += item.Price * item.Quantity;
+                    Total += item.Price;
                 }
                 if (CartItems.Count() > 0)
                 {
@@ -461,6 +535,7 @@
                 DrCr = "C",
                 ProcessedStatus = "0",
                 PayMode = "",
+                AssociatedAccount ="",
                 TranscationDetails = "Transaction Started",
                 Revreq = "0",
 
@@ -504,6 +579,11 @@
         JournalEntry.LoggedInUsername = await sessionStorage.GetItemAsync<string>("LoggedInUser");
         JournalEntry.LoggedInUserRole = await sessionStorage.GetItemAsync<string>("Role");
 
+        if (string.IsNullOrEmpty(Payment.AssociatedAccount))
+        {
+            Payment.AssociatedAccount = "";
+        }
+        JournalEntry.AssociatedAccount = Payment.AssociatedAccount;
         JournalEntry.PayMode = Paymode;
         JournalEntry.AmountPaid= Payment.AmountExpected;
         JournalEntry.AmountReceivedFromCustomer = Payment.AmountPaid;
@@ -670,13 +750,28 @@
     }
     public async void Visa()
     {
+        Paymode = "VISA";
+        Payment.AmountPaid = Total;
+        Payment.AmountExpected = Total;
 
-        OnShowCashModal();
+        OnShowChannelsModal();
     }
-    public async void MobileMoney()
+    public async void AirtelMoney()
     {
+        Paymode = "AIRTEL MONEY";
+        Payment.AmountPaid = Total;
+        Payment.AmountExpected = Total;
 
-        OnShowCashModal();
+        OnShowChannelsModal();
+    }  
+    
+    public async void TNMMPAMBA()
+    {
+        Paymode = "TNM MPAMBA";
+        Payment.AmountPaid = Total;
+              Payment.AmountExpected = Total;
+
+        OnShowChannelsModal();
     }
 
 
@@ -744,6 +839,7 @@
 
     private Modal modal = default!;
     private Modal cashModal = default!;
+    private Modal channelsModal = default!;
 
     private async Task OnShowModalClick()
     {
@@ -754,7 +850,10 @@
     {
         await cashModal.ShowAsync();
     }
-
+    private async Task OnShowChannelsModal()
+    {
+        await channelsModal.ShowAsync();
+    }
     private async Task OnHideModalClick()
     {
         await modal.HideAsync();
@@ -762,6 +861,10 @@
     private async Task OnHideCashModalClick()
     {
         await cashModal.HideAsync();
+    }   
+    private async Task OnHideChannelsModalClick()
+    {
+        await channelsModal.HideAsync();
     }
 
     private void OnProccessCompleteNotify()

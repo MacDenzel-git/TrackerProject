@@ -16,7 +16,7 @@
 
 <div>
     <Modal @ref="modal"
-           title="Low Stock Details"> 
+    title="Low Stock Details"> 
 
         <BodyTemplate>
 
@@ -91,7 +91,7 @@
 
 <div>
     <Modal @ref="expiredModal"
-           title="Expired Details">
+    title="Expired Details">
 
         <BodyTemplate>
 
@@ -166,7 +166,19 @@
 @if (isDataLoaded)
 {
 
+    @if (!string.IsNullOrEmpty(OutputHandler.Message))
+    {
+        if (OutputHandler.IsErrorOccured)
+        {
+            <p class="text-danger">@OutputHandler.Message</p>
+        }
+        else
+        {
+            <p class="text-success">@OutputHandler.Message</p>
+        }
 
+
+    }
     <div class="container mt-5">
         <div class="row mb-4">
             <div class="col-md-4">
@@ -197,7 +209,19 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-10">
+                <div class="card shadow-sm" style="background: linear-gradient(135deg, #28a745, #218838); border-radius: 12px;">
 
+                </div>
+            </div><div class="col-md-2">
+                <div class="card shadow-sm" style="background: linear-gradient(135deg, #28a745, #218838); border-radius: 12px;">
+
+                    <button class="p-3  btn btn-sm btn-success" @onclick="()=>RunEOD()"> RUN EOD </button>
+
+                </div>
+            </div>
+        </div>
         <div class="card shadow-lg p-4" style="border-radius: 12px;">
             <h3 class="text-center mb-4">@ShopName Shop</h3>
 
@@ -244,10 +268,12 @@
                                         { <td>
                                                 <button class="text-light btn btn-sm btn-success" >Processed</button>
                                             </td>
-                                           
-                                        }else{
+
+                                        }
+                                        else
+                                        {
                                             <td>
-                                                <button class="text-light btn btn-sm btn-danger" @onclick="()=>ReOpenCart(transaction.ReceiptNo)">View Cart</button>
+                                                <button class="text-light btn btn-sm btn-danger" @onclick="()=>ReOpenCart(transaction.ReceiptNo)">Incomplete</button>
                                             </td>
                                         }
 
@@ -350,24 +376,24 @@ else
 
 <style>
     body {
-        background-color: #f8f9fa;
-        font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
     }
 
     .card {
-        background-color: #ffffff;
-        border: none;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .nav-tabs .nav-link.active {
-        background-color: #007bff;
-        color: white;
-        border: 1px solid #007bff;
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
     }
 
     h5 {
-        color: #333;
+    color: #333;
     }
 </style>
 
@@ -425,6 +451,28 @@ else
     {
         NavigationManager.NavigateTo($"POS/{receipt}");
     }
+
+    private async Task RunEOD()
+    {
+
+        //check if we have unfinished transactions
+
+        Transactions = await httpHandler.GetList<JournalEntryDTO>($"POS/GetShopTransactions?shopId={ShopId}");
+
+        if (Transactions.Where(x => x.ProcessedStatus.Trim() == "0").Count() > 0)
+        {
+            OutputHandler = new OutputHandler
+            {
+                IsErrorOccured = true, 
+                Message = "You have incomplete transaction, complete them before Running "
+            };
+        }
+        else
+        {
+            
+        }
+    }
+
     private int selectedTab = 1;
 
     private async Task LoadData()

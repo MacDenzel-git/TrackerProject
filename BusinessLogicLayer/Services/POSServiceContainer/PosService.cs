@@ -50,6 +50,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
         {
             try
             {
+                var discount = 0;
                 //var product =  _trackerDbContext.InventoryTransactions.Where(x =>x.BarCode == productSearchParams.BarCode
                 //&& x.ReceivingShop == productSearchParams.ShopId).Include().OrderByDescending(x => x.TransactionId).FirstOrDefaultAsync();
                 var product = await _productService.GetSingleItem(x => x.ProductId == productSearchParams.ProductCode);
@@ -94,7 +95,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
                         else
                         {
                             shopProduct.CartItemDiscount = 0;
-
+                             
                         }
 
                         //add to cart 
@@ -110,9 +111,9 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
                                 ProductName = shopProduct.ProductName,
                                 CartItemId = productSearchParams.CartItemId,
                                 IsReversed = false,
-                                Discount = product.DiscountPercent
+                                Discount = Convert.ToInt32(shopProduct.CartItemDiscount)
 
-                            };
+                        };
                         var cartItemCreation = await _unityOfWork.CartItemsRepository.Create(cartItem);
                         if (cartItemCreation.IsErrorOccured)
                         {
@@ -226,6 +227,7 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
                 payment.PayMode = jounalEntry.PayMode;
                 payment.AmountPaid = jounalEntry.AmountPaid;
                 payment.NumberOfItemsInCart = jounalEntry.NumberOfCartItems;
+                payment.AssociatedAccount = jounalEntry.AssociatedAccount;
                 payment.Rev = "0";
                 payment.Revreq = "0";
                 payment.DrCr = "C";
@@ -351,6 +353,10 @@ namespace BusinessLogicLayer.Services.POSServiceContainer
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("shopId", shopId);
             var output = await _jentryService.FromSprocAsync<JournalEntryDTO>("spGetShopTransactions", parameters);
+            if (output is null)
+            {
+                return new List<JournalEntryDTO> { };
+            }
             return output;
         }
 

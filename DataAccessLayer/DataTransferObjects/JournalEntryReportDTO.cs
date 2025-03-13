@@ -14,8 +14,9 @@ namespace TrackerUIWeb.Data.DataTransferObjects
         public string PaymentType { get; set; }
 
         public string Rev { get; set; }
-         
- 
+        public string AssociatedAccount { get; set; }
+
+
         public string Processedby { get; set; }
 
         public string? TranscationDetails { get; set; }

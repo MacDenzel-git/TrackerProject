@@ -15,6 +15,7 @@ namespace DataAccessLayer.DataTransferObjects
         public string ReceiptNo { get; set; } 
 
         public string? ChequeNumber { get; set; }
+        public string? AssociatedAccount { get; set; }
 
         public decimal AmountPaid { get; set; }
 
