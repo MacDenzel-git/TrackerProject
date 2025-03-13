@@ -25,14 +25,14 @@
     <main>
         <div class="bb-top-row px-4 d-flex justify-content-between">
 
-            @if (authenticationState != null) 
+            @if(authenticationState != null) 
             {
-                    <AuthorizeView>
+             <AuthorizeView>
                 <NotAuthorized>
                     <Button Color="ButtonColor .Primary" @onclick="LogIn"><span class="glyphicon glyphicon-log-in"></span> Login </Button>
                 </NotAuthorized>
 
-                </AuthorizeView>
+           </AuthorizeView>
             <AuthorizeView Roles="Manager,Senior Management">
                 <Authorized>
                     <Icon Name="IconName.List" role="button" @onclick="ToggleSidebar" />

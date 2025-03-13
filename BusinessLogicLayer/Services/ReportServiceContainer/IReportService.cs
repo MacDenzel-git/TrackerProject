@@ -17,6 +17,9 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
         Task<IEnumerable<JournalEntryReportDTO>> GetReportData(int shopId, DateTime start, DateTime end);
         Task<OutputHandler> RunEOD(int shopId);
         //Task<DashboardDTO> SetupDashboard();
+        Task< SalesPieChartDTO>  GetPieChart(); 
+        Task<SalesBarChartDTO> GetBarChart();
         Task<IEnumerable<ReportBookingDTO>> GetTransactions( DateTime start, DateTime end,int shopid=0);
+
     }
 }

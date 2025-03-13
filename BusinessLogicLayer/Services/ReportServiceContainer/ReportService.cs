@@ -6,7 +6,11 @@ using Blazored.SessionStorage;
 using DataAccessLayer.DataTransferObjects;
 using DataAccessLayer.GenericRepository;
 using DataAccessLayer.Models;
+using DocumentFormat.OpenXml.Bibliography;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.Data;
 using System.Net;
 using System.Net.Mail;
 using TrackerUIWeb.Data.DataTransferObjects;
@@ -15,18 +19,20 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
 {
     public class ReportService : IReportService
     {
-          private readonly GenericRepository<JournalEntry> _journalEntries;
-          private readonly GenericRepository<Shop> _shop;
-         private readonly IMailService _mailService;
-       TrackerDbContext _context;
+        private readonly GenericRepository<JournalEntry> _journalEntries;
+        private readonly GenericRepository<Shop> _shop;
+        private readonly IMailService _mailService;
+        TrackerDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public ReportService(IMailService mailService, TrackerDbContext context, GenericRepository<JournalEntry> journalEntries, GenericRepository<Shop> shop)
+        public ReportService(IMailService mailService, TrackerDbContext context, GenericRepository<JournalEntry> journalEntries, GenericRepository<Shop> shop, IConfiguration configuration)
         {
 
             _mailService = mailService;
             _context = context;
             _journalEntries = journalEntries;
             _shop = shop;
+            _configuration = configuration;
         }
 
 
@@ -66,16 +72,16 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
 
         #endregion
 
-        public async Task<IEnumerable<ReportBookingDTO>> GetTransactions(DateTime start, DateTime end,int shopId=0)
+        public async Task<IEnumerable<ReportBookingDTO>> GetTransactions(DateTime start, DateTime end, int shopId = 0)
         {
-            
 
 
-            Dictionary<string, object> parameters =  new Dictionary<string, object>();
-            parameters.Add("startDate",start);
-            parameters.Add("startDate",end );
 
-            if (shopId==0)
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            parameters.Add("startDate", start);
+            parameters.Add("startDate", end);
+
+            if (shopId == 0)
             {
                 var output = await _journalEntries.FromSprocAsync<ReportBookingDTO>("spGetAllTransactionsForReport", parameters);
 
@@ -87,12 +93,10 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
                 var output = await _journalEntries.FromSprocAsync<ReportBookingDTO>("spGetTransactionsForReport", parameters);
                 return output;
             }
-          
+
         }
 
 
-
-         
 
 
 
@@ -102,18 +106,18 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
             {
                 List<string> attachmentFiles = new List<string>();
 
-                var bookingReportOutput = await GenerateReport(shopId);
-                if (!bookingReportOutput.IsErrorOccured)
+                var ReportOutput = await GenerateReport(shopId);
+                if (!ReportOutput.IsErrorOccured)
                 {
-                    if (!string.IsNullOrEmpty(bookingReportOutput.Result.ToString()))
+                    if (!string.IsNullOrEmpty(ReportOutput.Result.ToString()))
                     {
-                        attachmentFiles.Add(bookingReportOutput.Result.ToString());
+                        attachmentFiles.Add(ReportOutput.Result.ToString());
                     }
 
                 }
                 else
                 {
-                    return bookingReportOutput;
+                    return ReportOutput;
                 }
 
                 //var reversalReportOutput = await GenerateReversalReport();
@@ -151,10 +155,11 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
 
                 //archive data
 
-             
-                      return new OutputHandler
+
+                return new OutputHandler
                 {
-                    IsErrorOccured = false, Message = "EOD Ran Successfully"
+                    IsErrorOccured = false,
+                    Message = "EOD Ran Successfully"
                 };
             }
             catch (Exception)
@@ -162,7 +167,7 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
 
                 throw;
             }
-         
+
 
         }
 
@@ -194,7 +199,7 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
                 }
 
 
-                var outputFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Reports","EOD","Report",path);
+                var outputFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Reports", "EOD", "Report", path);
 
                 //jan/1/
                 //Filename 
@@ -202,7 +207,7 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
                 string filename = $"{DateTime.Now.ToString("dd_mm_yy")}_{shopName}_AgroLightReport.xlsx";
                 if (reportData is null)
                 {
-                    reportData = new List<JournalEntryReportDTO>() { new JournalEntryReportDTO {TransactionDate = DateTime.Now } };
+                    reportData = new List<JournalEntryReportDTO>() { new JournalEntryReportDTO { TransactionDate = DateTime.Now } };
                 }
                 OpenXMLGenericProcessor<JournalEntryReportDTO>.CreateExcelFile(reportData.ToList(), outputFolder, output, filename);
 
@@ -228,13 +233,74 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
             return output;
 
         }
+
+        public async Task<SalesPieChartDTO> GetPieChart()
+        {
+            SalesPieChartDTO pieChartData = new SalesPieChartDTO
+            {
+                Sales = new List<ShopSales> 
+                {
+
+                    new ShopSales {Amount = 300000,ShopName = "mzuzu",TransactionCount = 50  },
+                    new ShopSales {Amount = 1200000,ShopName = "Blantyre",TransactionCount = 20  },
+                    new ShopSales {Amount = 1000000,ShopName = "Lilongwe",TransactionCount = 90 }
+                },
+                Shops = new List<string> { }
+            };
+
+
+            //pieChartData.Sales = await _journalEntries.FromSprocAsync<ShopSales>("spGetPieChartData");
+             foreach (var item in pieChartData.Sales)
+            {
+                pieChartData.Shops.Add(item.ShopName);
+            }
+            return pieChartData;
+
+        }
+
+
+
+        public async Task<SalesBarChartDTO> GetBarChart()
+        {
+            SalesBarChartDTO salesBarChart = new SalesBarChartDTO
+            {
+                MonthNames = new List<string> { },
+                Shops = new List<string> { }
+            };
+            var output = await _journalEntries.FromSprocAsync<BarChartData>("spGetBarChartData");
+            if (output is null)
+            {
+                return null;
+            }
+            foreach (var item in output)
+            {
+
+                item.MonthName = new DateTime(DateTime.Now.Year, item.Month, DateTime.Now.Day).ToString("MMMM");
+
+                var isExist = salesBarChart.MonthNames.Find(x => x == item.MonthName);
+                if (isExist is null)
+                {
+                    salesBarChart.MonthNames.Add(item.MonthName);
+                }
+
+
+                var isShopExist = salesBarChart.Shops.Find(x => x == item.ShopName);
+                if (isShopExist is null)
+                {
+                    salesBarChart.Shops.Add(item.ShopName);
+                }
+            }
+            salesBarChart.Data = output.OrderBy(x => x.Month);
+            return salesBarChart;
+
+        }
         public async Task<IEnumerable<JournalEntryReportDTO>> GetReportData(int shopId, DateTime start, DateTime end)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("startDate", start.Date);
             parameters.Add("EndDate", end.Date);
 
-            if (shopId==0)
+            if (shopId == 0)
             {
                 var output = await _journalEntries.FromSprocAsync<JournalEntryReportDTO>("spGetAllTransactionsForReport", parameters);
                 return output;
@@ -245,7 +311,7 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
                 var output = await _journalEntries.FromSprocAsync<JournalEntryReportDTO>("GetTransactionsForReport", parameters);
                 return output;
             }
-          
+
 
         }
 
@@ -320,7 +386,7 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
 
                 if (!string.IsNullOrEmpty(emailProperties.RecepientEmail))
                 {
-                    
+
                     string[] receipientAddresses = emailProperties.RecepientEmail.Split(',');
 
                     foreach (var recepientAddress in receipientAddresses)
@@ -335,7 +401,7 @@ namespace BusinessLogicLayer.Services.ReportServiceContainer
                         IsErrorOccured = true,
                         Message = "Please add at least one add recepient"
                     };
-                }   
+                }
 
                 if (!string.IsNullOrEmpty(emailProperties.CC))
                 {

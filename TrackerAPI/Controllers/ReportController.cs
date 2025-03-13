@@ -51,5 +51,42 @@ namespace TrackerAPI.Controllers
                 return Ok(data);
             }
         }
+
+[HttpGet("GetPieChartData")]
+        public async Task<IActionResult> GetPieChartData()
+        {
+            var data = await _reportService.GetPieChart();
+            if (data == null)
+            {
+                return Ok(new OutputHandler
+                {
+                    Message = "Something went wrong"
+                });
+            }
+            else
+            {
+                return Ok(data);
+            }
+        }
+    
+
+
+
+[HttpGet("GetBarChartData")]
+        public async Task<IActionResult> GetBarChartData()
+        {
+            var data = await _reportService.GetBarChart();
+            if (data == null)
+            {
+                return Ok(new OutputHandler
+                {
+                    Message = "Something went wrong"
+                });
+            }
+            else
+            {
+                return Ok(data);
+            }
+        }
     }
 }
