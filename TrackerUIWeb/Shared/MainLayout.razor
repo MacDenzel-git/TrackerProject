@@ -2,46 +2,37 @@
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
     @inject NavigationManager NavigationManager
     @inject AuthenticationStateProvider AuthenticationStateProvider
+    @using System.Security.Claims
 
 <div class="bb-page">
 
-    @if (authenticationState != null)
-    {
-        
-        <AuthorizeView Roles="Manager,Senior Management">
+
+    <Sidebar @ref="sidebar"
+    Href="/"
+    CustomIconName="bi bi-AlarmFill"
+    Title="PMT"
+    BadgeText="v1.0.0"
+    DataProvider="SidebarDataProvider" />
+
+    @*     <AuthorizeView Roles="cashier,Manager,Senior Management">
             <Authorized>
- 
-                 <Sidebar @ref="sidebar"
-                         Href="/"
-                         CustomIconName="bi bi-AlarmFill"
-                         Title="PMT"
-                         BadgeText="v1.0.0"
-                         DataProvider="SidebarDataProvider" />
+
             </Authorized>
 
-        </AuthorizeView>
-    }
+        </AuthorizeView> *@
+
 
     <main>
         <div class="bb-top-row px-4 d-flex justify-content-between">
 
-            @if(authenticationState != null) 
+
+            @*   <Button Color="ButtonColor .Primary" @onclick="LogIn"><span class="glyphicon glyphicon-log-in"></span> Login </Button>
+ *@
+
+            <Icon Name="IconName.List" role="button" @onclick="ToggleSidebar" />
+            @if (authenticationState != null)
             {
-             <AuthorizeView>
-                <NotAuthorized>
-                    <Button Color="ButtonColor .Primary" @onclick="LogIn"><span class="glyphicon glyphicon-log-in"></span> Login </Button>
-                </NotAuthorized>
-
-           </AuthorizeView>
-            <AuthorizeView Roles="Manager,Senior Management">
-                <Authorized>
-                    <Icon Name="IconName.List" role="button" @onclick="ToggleSidebar" />
-
-                    <Button Color="ButtonColor.Danger" @onclick="Logout"><span class="glyphicon glyphicon-log-out"></span> Log Out </Button>
-                   
-                </Authorized>
-
-                </AuthorizeView>
+                <Button Color="ButtonColor.Danger" @onclick="Logout"><span class="glyphicon glyphicon-log-out"></span> Log Out </Button>
             }
         </div>
 
@@ -56,11 +47,14 @@
 @code {
     Sidebar sidebar = default!;
     IEnumerable<NavItem> navItems;
-
+    private string UserName = "";
+    private string ShopName = "";
+    private string UserRole = "";
+    private int ShopId =0;
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
- 
+
 
     private AuthenticationState authenticationState;
 
@@ -81,45 +75,88 @@
         // await sessionStorage.SetItemAsync("shopName", "Mzuzu Main");
 
         if (navItems is null)
-            navItems = GetNavItems();
+            navItems = await GetNavItems();
 
         return await Task.FromResult(request.ApplyTo(navItems));
     }
 
-    private IEnumerable<NavItem> GetNavItems()
-    {
-        navItems = new List<NavItem>
+    private async Task<IEnumerable<NavItem>> GetNavItems()
+    {        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+
+        if (authState != null)
         {
-            new NavItem { Id = "1", Href = "/ReportDashboard", IconName = IconName.HouseDoorFill, Text = "Dashboard"},
+            var user = authState.User;
+            @if (user.Identity.IsAuthenticated)
+            {
 
-            // new NavItem { Id = "2", IconName = IconName.LayoutSidebarInset, Text = "Stock Management", IconColor = IconColor.Primary },
-            new NavItem { Id = "3", Href = "/Product/ProductConfiguration", IconName = IconName.WindowPlus, Text = "Products"},
-            new NavItem { Id = "4", Href = "/Stock/StockManagement", IconName = IconName.CurrencyDollar, Text = "Stock Management"},
-            new NavItem { Id = "5", Href = "/Shop", IconName = IconName.Shop, Text = "Shops", },
-            new NavItem { Id = "5", Href = "/Reports", IconName = IconName.Receipt, Text = "Reports", },
+                UserName = user.Identity.Name;
+                UserRole = user.FindFirst(ClaimTypes.Role)?.Value;
+                ShopId = Convert.ToInt32(user.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                ShopName = user.FindFirst(ClaimTypes.Locality)?.Value;
 
 
-            //  new NavItem { Id = "10", Href = "/User/ProfileManagement", IconName = IconName.CheckCircleFill, Text = "Profile Manager", ParentId="4"},
-            // new NavItem { Id = "11", Href = "/User/Usermanagemt", IconName = IconName.PersonSquare, Text = "Users", ParentId="4"},
-            // // new NavItem { Id = "7", Href = "/sidebar", IconName = IconName.LayoutSidebarInset, Text = "Sidebar", ParentId="4"},
+                if (UserRole.ToLower() == "cashier")
+                {
+                    return navItems = new List<NavItem>
 
-            // new NavItem { Id = "8", IconName = IconName.WindowPlus, Text = "Forms", IconColor = IconColor.Danger },
-            // new NavItem { Id = "9", Href = "/autocomplete", IconName = IconName.InputCursorText, Text = "Auto Complete", ParentId="8"},
-            // new NavItem { Id = "10", Href = "/currency-input", IconName = IconName.CurrencyDollar, Text = "Currency Input", ParentId="8"},
-            // new NavItem { Id = "11", Href = "/number-input", IconName = IconName.InputCursor, Text = "Number Input", ParentId="8"},
-            // new NavItem { Id = "12", Href = "/switch", IconName = IconName.ToggleOn, Text = "Switch", ParentId="8"},
-        };
+                    {
+                     new NavItem { Id = "1", Href = "/Shop", IconName = IconName.Shop, Text = "Shop", },
+                     new NavItem { Id = "2", Href = "/pos", IconName = IconName.Cash, Text = "POS", },
+                    };
 
-        return navItems;
+                }
+                else
+                {
+                    navItems = new List<NavItem>
+                    {
+                        new NavItem { Id = "1", Href = "/ReportDashboard", IconName = IconName.HouseDoorFill, Text = "Dashboard"},
+                        new NavItem { Id = "3", Href = "/Product/ProductConfiguration", IconName = IconName.WindowPlus, Text = "Products"},
+                        new NavItem { Id = "4", Href = "/Stock/StockManagement", IconName = IconName.CurrencyDollar, Text = "Stock Management"},
+                        new NavItem { Id = "5", Href = "/Shop", IconName = IconName.Shop, Text = "Shops", },
+                        new NavItem { Id = "5", Href = "/Reports", IconName = IconName.Receipt, Text = "Reports", },
+
+                    };
+
+                }
+                return navItems;
+
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/login");
+
+                return new List<NavItem> { };
+
+            }
+
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+
+            return new List<NavItem> { };
+
+        }
     }
 
-    private void ToggleSidebar() => sidebar.ToggleSidebar();
+    private void ToggleSidebar()
+    {
+        if (UserRole.ToLower() == "cashier")
+        {
+        }else
+        {
+            sidebar.ToggleSidebar();
+
+        }
+    }
 
 
     private void Logout()
     {
         sessionStorage.ClearAsync();
-        NavigationManager.NavigateTo("/");
+
+        NavigationManager.NavigateTo("/login", true);
 
 
     }
@@ -132,4 +169,4 @@
 
     }
 }
-}
+ 

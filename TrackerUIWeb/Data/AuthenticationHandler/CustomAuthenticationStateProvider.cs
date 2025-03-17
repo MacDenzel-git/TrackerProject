@@ -45,8 +45,8 @@ namespace TrackerUIWeb.Data.AuthenticationHandler
             {
                 new Claim(ClaimTypes.Name, Username),
                 new Claim(ClaimTypes.Role, role),
-                new Claim("ShopId", shopId.ToString()),
-                new Claim("shopName",shopName)
+                new Claim(ClaimTypes.NameIdentifier, shopId.ToString()),
+                new Claim(ClaimTypes.Locality,shopName)
             };
 
                 // Create the ClaimsIdentity and set the user

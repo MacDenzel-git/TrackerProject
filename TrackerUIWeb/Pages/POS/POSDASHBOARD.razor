@@ -91,215 +91,223 @@
 
 
 
-<AuthorizeView Roles="cashier">
-    <Authorized>
 
-        <div class="row">
-            <div class="col-4">
-                @* <Button disabled="@IsDisabled" class="p-3 btn btn-sm btn-danger" Color="ButtonColor.Success" @onclick="NewTransaction">
+
+<Card >
+    <CardBody>
+        <AuthorizeView Roles="cashier">
+            <Authorized>
+
+                <div class="row">
+                    <div class="col-4">
+                        @* <Button disabled="@IsDisabled" class="p-3 btn btn-sm btn-danger" Color="ButtonColor.Success" @onclick="NewTransaction">
             New
         </Button> *@
-                <button disabled="@_isLoading"
-                class="mt-2 btn btn-bg btn-danger  @(_isLoading ? "loading" : "")"
-                @onclick="NewTransaction">
-                    @NewButtonText
-                </button>
-            </div>
-            <div class="col-4">
-            </div>
-            <div class="col-4">
+                        <button disabled="@_isLoading"
+                                class="mt-2 btn btn-bg btn-danger  @(_isLoading ? "loading" : "")"
+                                @onclick="NewTransaction">
+                            @NewButtonText
+                        </button>
+                    </div>
+                    <div class="col-4">
+                    </div>
+                    <div class="col-4">
+                        <div class="row">
+                            <div class="col-6 fw-bold"><p> Receipt: @ShopReceipt</p></div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </Authorized>
+
+        </AuthorizeView>
+
+
+        @if (IsSearchFormActive)
+        {
+
+
+
+            @*  <p>Selected Item: @selectedItem</p> *@
+            <EditForm Model="@ProductSearch" OnValidSubmit="SearchProduct">
                 <div class="row">
-                    <div class="col-6 fw-bold"><p> Receipt: @ShopReceipt</p></div>
-
-                </div>
-            </div>
-        </div>
-
-    </Authorized>
-
-</AuthorizeView>
-
-
-@if (IsSearchFormActive)
-{
-
-
-
-    @*  <p>Selected Item: @selectedItem</p> *@
-    <EditForm Model="@ProductSearch" OnValidSubmit="SearchProduct">
-        <div class="row">
 
 
 
 
-            <div class="col-4">
-                <div class="form-group">
-                    <label for="exampleFormControlInput1">    Search Code</label>
-                    <InputText class="form-control" @bind-Value="ProductSearch.ProductCode"></InputText>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="form-group">
-                    <label for="exampleFormControlInput1">   Quantity</label>
-                    <InputNumber class="form-control" @bind-Value="ProductSearch.Quantity"></InputNumber>
-                </div>
-            </div>
-            <div class="col-4 mt-3">
-                @*   <Button  Color="ButtonColor.Primary" @onclick="SearchProduct">Search</Button> *@
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">    Search Code</label>
+                            <InputText class="form-control" @bind-Value="ProductSearch.ProductCode"></InputText>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">   Quantity</label>
+                            <InputNumber class="form-control" @bind-Value="ProductSearch.Quantity"></InputNumber>
+                        </div>
+                    </div>
+                    <div class="col-4 mt-3">
+                        @*   <Button  Color="ButtonColor.Primary" @onclick="SearchProduct">Search</Button> *@
 
-                <button 
-                disabled="@_isLoading"
-                class="mt-2 btn btn-gb btn-primary  @(_isLoading ? "loading" : "")">
-                    @ButtonText
-                </button>
-            </div>
-            @* <div class="form-group">
+                        <button disabled="@_isLoading"
+                                class="mt-2 btn btn-gb btn-primary  @(_isLoading ? "loading" : "")">
+                            @ButtonText
+                        </button>
+                    </div>
+                    @* <div class="form-group">
                     <label for="exampleFormControlInput1">   Discount</label>
                     <InputNumber class="form-control" @bind-Value="ProductSearch.Discount"></InputNumber>
                 </div> *@
 
 
 
-        </div>
-
-
-    </EditForm>
-}
-@if (!string.IsNullOrEmpty(OutputHandler.Message))
-{
-    if (OutputHandler.IsErrorOccured)
-    {
-        <p class="text-danger">@OutputHandler.Message</p>
-    }
-
-
-
-}
-
-<div class="row">
-    <div class="col-3 mt-4">  
-        @if (IsSearchFormActive)
-        {  
-            <div class="searchable-dropdown">
-                <!-- Search Input -->
-                <input type="text" @bind="searchTerm" @oninput="OnSearchChanged" class="search-input" placeholder="Search items..." />
-
-                <!-- Dropdown Menu -->
-                <div class="dropdown-menu">
-                    @if (filteredItems.Any())
-                    {
-                        @foreach (var item in filteredItems)
-                        {
-                            <button class="dropdown-item" @onclick="() => SelectItem(item.ProductID, item.ProductName )">
-                                (@item.ProductID)-@item.ProductName
-                            </button>
-                        }
-                    }
-                    else
-                    {
-                        <Spinner Type="SpinnerType.Border" Size="SpinnerSize.Small" />
-
-                    }
-
                 </div>
-            </div> } </div>
-    <div class="col-9"> <br />
-        <div class="outer">
-            <table class="table table-striped table-sm align-middle table-bordered">
-                <thead class="table-success">
-                    <tr>
-                        <th>#</th>
-                        <th>Product Code</th>
-                        <th>Product Name</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Discount</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (CartItems.Count() > 0)
-                    {
-                        @foreach (var item in CartItems)
-                        {
-                            <tr>
 
 
-                                <td>@item.CartItemId</td>
-                                <td>@item.ProductId</td>
-                                <td class="text">@item.ProductName</td>
-                                <td class="text">@item.Quantity</td>
-                                <td class="text">@item.Price</td>
-                                <td class="text">@item.Discount %</td>
-                                <td>
-
-                                    <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.CartItemId)"> Delete</button>
-                                </td>
-                            </tr>
-                        }   }
+            </EditForm>
+        }
+        @if (!string.IsNullOrEmpty(OutputHandler.Message))
+        {
+            if (OutputHandler.IsErrorOccured)
+            {
+                <p class="text-danger">@OutputHandler.Message</p>
+            }
 
 
-                </tbody>
 
-            </table>
-        </div>
-        <table class="table table-striped table-sm align-middle table-bordered">
-            <thead class="">
-                <tr>
-                    <th style="color:white !important">Product Code</th>
-                    <th style="color:white !important">Product Name</th>
-                    <th style="color:black !important">Total</th>
-                    <th style="color:black !important">@Total</th>
-                    <th style="color:white !important">Action</th>
-                </tr>
-            </thead>
-            <tbody>
+        }
+         <div class="row">
+            <div class="col-3 mt-4">
+                @if (IsSearchFormActive)
+                {
+                    <div class="searchable-dropdown">
+                        <!-- Search Input -->
+                        <input type="text" @bind="searchTerm" @oninput="OnSearchChanged" class="search-input" placeholder="Search items..." />
 
+                        <!-- Dropdown Menu -->
+                        <div class="dropdown-menu">
+                            @if (filteredItems.Any())
+                            {
+                                @foreach (var item in filteredItems)
+                                {
+                                    <button class="dropdown-item" @onclick="() => SelectItem(item.ProductID, item.ProductName )">
+                                        (@item.ProductID)-@item.ProductName
+                                    </button>
+                                }
+                            }
+                            else
+                            {
+                                <Spinner Type="SpinnerType.Border" Size="SpinnerSize.Small" />
 
-            </tbody>
+                            }
 
-        </table>
-
-
-        <AuthorizeView Roles="cashier">
-            <Authorized>
-
-                <div class="row">
-                    <div class="col-2">
-                        @if (IsCheckOutButtonActive)
-                        {
-                            <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
-
-                        }
-                    </div>
-                    <div class="col-6">
-                        @if (CheckoutOptionIsActive)
-                        {
-
-
-                            <button class="p-3  btn btn-sm btn-primary" @onclick="()=>Cash()"> CASH </button>
-
-
-                            <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> VISA </button>
-
-
-                            <button class="p-3  btn btn-sm btn-danger" @onclick="()=>AirtelMoney()"> AIRTEL MONEY </button>
-                            <button class="p-3  btn btn-sm btn-success" @onclick="()=>TNMMPAMBA()"> TNM MPAMBA </button>
-
-
-                        }
-                    </div>
-                    <div class="col-2">
-                        <div class="row">
                         </div>
                     </div>
+                }
+            </div>
+            <div class="col-9">
+                <br />
+                <div class="outer" style="
+    background-color: #d8d8d8;">
+                    <table class="table table-striped table-sm align-middle table-bordered">
+                        <thead class="table-success">
+                            <tr>
+                                <th>#</th>
+                                <th>Product Code</th>
+                                <th>Product Name</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Discount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (CartItems.Count() > 0)
+                            {
+                                @foreach (var item in CartItems)
+                                {
+                                    <tr>
+
+
+                                        <td>@item.CartItemId</td>
+                                        <td>@item.ProductId</td>
+                                        <td class="text">@item.ProductName</td>
+                                        <td class="text">@item.Quantity</td>
+                                        <td class="text">@item.Price</td>
+                                        <td class="text">@item.Discount %</td>
+                                        <td>
+
+                                            <button class="m-1 btn btn-sm btn-danger" @onclick="()=>Delete(item.CartItemId)"> Delete</button>
+                                        </td>
+                                    </tr>
+                                }   }
+
+
+                        </tbody>
+
+                    </table>
                 </div>
-            </Authorized>
+                <table class="table table-striped table-sm align-middle table-bordered">
+                    <thead class="">
+                        <tr>
+                            <th style="color:white !important">Product Code</th>
+                            <th style="color:white !important">Product Name</th>
+                            <th style="color:black !important">Total</th>
+                            <th style="color:black !important">@Total</th>
+                            <th style="color:white !important">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
 
-        </AuthorizeView>
+                </table>
 
-    </div>
-</div>
+
+                <AuthorizeView Roles="cashier">
+                    <Authorized>
+
+                        <div class="row">
+                            <div class="col-2">
+                                @if (IsCheckOutButtonActive)
+                                {
+                                    <button class="p-3 btn btn-sm btn-danger" @onclick="()=>CheckOut()"> Checkout </button>
+
+                                }
+                            </div>
+                            <div class="col-6">
+                                @if (CheckoutOptionIsActive)
+                                {
+
+
+                                    <button class="p-3  btn btn-sm btn-primary" @onclick="()=>Cash()"> CASH </button>
+
+
+                                    <button class="p-3 mx-4 btn btn-sm btn-warning" @onclick="()=>Visa()"> VISA </button>
+
+
+                                    <button class="p-3  btn btn-sm btn-danger" @onclick="()=>AirtelMoney()"> AIRTEL MONEY </button>
+                                    <button class="p-3  btn btn-sm btn-success" @onclick="()=>TNMMPAMBA()"> TNM MPAMBA </button>
+
+
+                                }
+                            </div>
+                            <div class="col-2">
+                                <div class="row">
+                                </div>
+                            </div>
+                        </div>
+                    </Authorized>
+
+                </AuthorizeView>
+
+            </div>
+        </div>
+    </CardBody>
+</Card>
+
+
 
 
 

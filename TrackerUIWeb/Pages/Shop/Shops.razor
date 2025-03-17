@@ -3,7 +3,8 @@
 @inject NavigationManager NavigationManager
  @inject HttpHandlerService httpHandler
  @inject Blazored.SessionStorage.ISessionStorageService sessionStorage;
-
+     @inject AuthenticationStateProvider AuthenticationStateProvider
+    @using System.Security.Claims
 @page "/Shop"
 
 <style>
@@ -81,26 +82,28 @@
 </style>
 
 <div class="container">
-<div class="row">
-    @foreach(var item in ShopsList){
-
-        
-        <div class="col-3 m-3">
-        <div class="tile-grid">
-            <div class="tile">
-                <div class="tile-image">@item.ShopId</div>
-
-                <button class="text-light btn btn-sm btn-danger" @onclick="()=>OpenShop(item.ShopId)">@item.ShopName</button>
+    <div class="row">
 
 
-                <p>@item.ShopManagerName : @item.ShopManagerContact</p>
+        @foreach(var item in ShopsList){
+
+
+            <div class="col-3 m-3">
+                <div class="tile-grid">
+                    <div class="tile">
+                        <div class="tile-image">@item.ShopId</div>
+
+                        <button class="text-light btn btn-sm btn-danger" @onclick="()=>OpenShop(item.ShopId,item.ShopName)">@item.ShopName</button>
+
+
+                        <p>@item.ShopManagerName : @item.ShopManagerContact</p>
+                    </div>
+
+                </div>
             </div>
 
-        </div>
-        </div>
-        
 
-    }
+        }
     </div>
 </div>
 <script>
@@ -118,20 +121,40 @@
 {
 
     private IEnumerable<ShopDTO> ShopsList = new List<ShopDTO> {};
-
+    private string UserName = "";
+    private string UserRole = "";
+    private int ShopId = 0;
     protected override async Task OnInitializedAsync()
     {
-    
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            UserName = user.Identity.Name;
+            UserRole = user.FindFirst(ClaimTypes.Role)?.Value;
+            ShopId = Convert.ToInt32(user.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            // NavigationManager.NavigateTo("/reportDashboard", true);
+
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+
         ShopsList =  await httpHandler.GetList<ShopDTO>("Shop/GetAllShops");;
 
-        string Role = await sessionStorage.GetItemAsync<string>("Role");
-        string Username = await sessionStorage.GetItemAsync<string>("LoggedInUser");
+
+        if (UserRole.ToLower() == "cashier")
+        {
+            ShopsList = ShopsList.Where(x => x.ShopId == ShopId);
+        }
 
 
     }
-    public async void OpenShop(int shopId)
+    public async void OpenShop(int shopId, string shopName)
     {
-        NavigationManager.NavigateTo($"Shop/ShopDetails/{shopId}");
+        NavigationManager.NavigateTo($"Shop/ShopDetails/{shopId}/{shopName}");
 
      }
 }

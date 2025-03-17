@@ -564,7 +564,7 @@ else
             }
             else
             {
-                InventoryTransactionList = InventoryTransactionList.Where(x => x.IsDeleted == false);
+                InventoryTransactionList = InventoryTransactionList.Where(x => x.IsDeleted == false || x.IsDeleted == null);
             }
 
         }

@@ -338,7 +338,7 @@ else
             }
             else
             {
-                ProductList = ProductList.Where(x => x.IsDeleted == false);
+                ProductList = ProductList.Where(x => x.IsDeleted == false || x.IsDeleted == null);
             }
 
         }
