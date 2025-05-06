@@ -553,7 +553,8 @@ else
         }
         else
         {
-            
+            OutputHandler = await httpHandler.Get<OutputHandler>($"Report/RunEOD?shopId={ShopId}");
+
         }
     }
 

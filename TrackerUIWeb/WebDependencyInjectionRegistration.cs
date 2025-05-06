@@ -9,7 +9,7 @@ namespace TrackerUIWeb
         public static IServiceCollection AddServices(this IServiceCollection service)
         {
             service.AddScoped<IUtilService, UtilService>();
-             service.AddScoped<HttpHandlerService>();
+            service.AddScoped<HttpHandlerService>();
             return service;
         }
     }
